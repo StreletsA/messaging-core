@@ -12,11 +12,11 @@
 ```text
 javac -h . YourClass.java
 ```
-4. Move the .h file to [core/java](core/java/) folder
+4. Move the .h file to [core/java](../core/java/) folder
 5. Create a .cpp file
 6. Implement methods from your .h file
 7. Run script:
 ```text
 ./lib_builder.sh
 ```
-If you added a new class you should to castomize [lib_builder.sh](core/java/lib_builder.sh)
+If you added a new class you should to castomize [lib_builder.sh](../core/java/lib_builder.sh)
