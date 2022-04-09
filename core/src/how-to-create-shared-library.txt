@@ -1,0 +1,6 @@
+g++ tools/uuid.cpp tools/cJSON.c -c -fPIC
+g++ *.cpp -c -fPIC
+g++ *.o -shared -o libmessaging-core.so
+##########################################
+g++ -c -fPIC *.cpp tools/*.c tools/*.cpp
+g++ -fPIC *.o -shared -o libmessaging_core.so -lzmq -lpthread
