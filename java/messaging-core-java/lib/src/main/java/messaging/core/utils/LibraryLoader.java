@@ -1,5 +1,6 @@
 package messaging.core.utils;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -7,6 +8,7 @@ import java.util.Properties;
 
 public class LibraryLoader {
 
+    private static final String RESOURCE_FILE_PATH = "/home/andrey/Development/Projects/Ammer/messaging-core/java/messaging-core-java/lib/src/main/resources/config.properties";
     private static final String PROPERTY_NAME = "lib.messaging.core.path";
     private static final String SUBSCRIBER_LIB = "libsubscriber.so";
     private static final String PUBLISHER_LIB = "libpublisher.so";
@@ -17,7 +19,8 @@ public class LibraryLoader {
     static {
         property = new Properties();
         try {
-            fis = new FileInputStream("src/main/resources/config.properties");
+            fis = new FileInputStream(RESOURCE_FILE_PATH);
+            //fis = (FileInputStream) ClassLoader.class.getResourceAsStream("/../../../resources/config.properties");
             property.load(fis);
         } catch (IOException e) {
             e.printStackTrace();
@@ -44,6 +47,14 @@ public class LibraryLoader {
 
         return getLibPath(PUBLISHER_LIB);
 
+    }
+
+    public static void loadPublisherLib(){
+        System.load(getPublisherLibPath());
+    }
+
+    public static void loadSubscriberLib(){
+        System.load(getSubscriberLibPath());
     }
 
 }

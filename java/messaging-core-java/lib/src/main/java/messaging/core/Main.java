@@ -12,7 +12,7 @@ public class Main {
         Publisher publisher = new Publisher("tcp://*:2033", "tcp://*:5553");
         Subscriber subscriber = new Subscriber("TEST", "tcp://localhost:2033", "tcp://localhost:5553");
 
-        Sender sender = new Sender(publisher.getNativeObjectPointer());
+        Sender sender = new Sender(publisher);
         sender.start();
         Poller poller = new Poller(subscriber);
         poller.start();
@@ -23,20 +23,18 @@ public class Main {
 
 class Sender extends Thread {
 
-    private long publisherPointer;
+    private Publisher publisher;
 
-    public Sender(long publisher){
-        this.publisherPointer = publisher;
+    public Sender(Publisher publisher){
+        this.publisher = publisher;
     }
 
     @Override
     public void run() {
         System.out.println("Sender is starting...");
-        System.out.println("Pointer is " + publisherPointer);
+
         int seqNum = 1;
         while (true){
-
-
 
             try {
                 Message message = new Message(
@@ -44,27 +42,12 @@ class Sender extends Thread {
                         "TEST",
                         seqNum,
                         23422,
-                        0,
+                        false,
                         MessageType.INFO,
                         "{\n\t\"string_data\":\t\"Good job!!!\"\n}"
                 );
 
-                String messageJson = """
-                        {
-                           "uuid":	"wewfeer",
-                           "topic":	"TEST",
-                           "sequence_number":	836,
-                           "timestamp":	234241,
-                           "needs_reply":	0,
-                           "message_type":	"INFO",
-                           "data_json":	"{\n\t\"string_data\":\t\"Good job!!!\"\n}"
-                        }
-                        """;
-
-                Publisher publisherClass = new Publisher(publisherPointer);
-                publisherClass.publish(message);
-                //publisherClass.publish(publisherClass.getNativeObjectPointer(), message.serialize());
-                //publisherClass.publish(publisherPointer, seqNum, "123", "TEST", 434234, "INFO", false, "{\"string_data\":	\"Good job!!!\"}");
+                publisher.publish(message);
                 seqNum++;
             }catch (Exception e){
 

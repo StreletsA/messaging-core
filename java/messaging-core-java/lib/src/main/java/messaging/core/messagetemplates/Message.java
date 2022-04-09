@@ -17,7 +17,7 @@ public class Message {
     private String topic;
     private long sequence_number;
     private long timestamp;
-    private int needs_reply;
+    private boolean needs_reply;
     private MessageType message_type;
     private String data_json;
 
