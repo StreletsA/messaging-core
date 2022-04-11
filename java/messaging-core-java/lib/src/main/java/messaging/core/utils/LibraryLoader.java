@@ -1,8 +1,6 @@
 package messaging.core.utils;
 
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Properties;
 
@@ -20,7 +18,6 @@ public class LibraryLoader {
         property = new Properties();
         try {
             fis = new FileInputStream(RESOURCE_FILE_PATH);
-            //fis = (FileInputStream) ClassLoader.class.getResourceAsStream("/../../../resources/config.properties");
             property.load(fis);
         } catch (IOException e) {
             e.printStackTrace();

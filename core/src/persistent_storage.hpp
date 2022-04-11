@@ -4,8 +4,11 @@
 #include <thread>
 #include <queue>
 #include <mutex>
+#include <pqxx/pqxx>
 
 #include "datatypes.hpp"
+
+using namespace pqxx;
 
 class PersistentStorageInterface;
 class TestSubscriberPersistenceStorage;
@@ -80,5 +83,39 @@ private:
     void thread_fn();
 
     std::thread *store_thread;
+
+};
+
+class PostgreSqlPersistentStorage : public PersistentStorageInterface
+{
+public:
+    PostgreSqlPersistentStorage
+    (
+        std::string dbname,
+        std::string user,
+        std::string password,
+        std::string hostaddr,
+        std::string port
+    );
+
+    virtual std::list<Message> get_messages(long start, long end);
+    virtual void store_message(Message message);
+    virtual long load_sequence_number();
+
+    void join();
+    void detach();
+
+private:
+    connection *C;
+    std::string connection_string;
+    std::queue<Message> store_message_queue;
+    std::thread *store_thread;
+    std::mutex g_mutex;
+
+    long sequence_number = 0;
+
+    void thread_fn();
+    std::string create_insert_sql(Message message);
+    std::string create_select_sql(long start, long end);
 
 };

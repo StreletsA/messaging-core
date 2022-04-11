@@ -22,7 +22,7 @@
 void add_messages(Publisher *publisher)
 {
 	int i = 0;
-	while(true)
+	while(i < 20)
 	{
 		i++;
 
@@ -32,7 +32,7 @@ void add_messages(Publisher *publisher)
 		mes.set_sequence_number(i);
 		mes.set_timestamp(234241);
 		mes.set_topic("TEST");
-		mes.set_uuid("wewfeer");
+		mes.set_uuid(generate_uuid_v4());
 		
 		StringData mes_str_data("Good job!!!");
 
@@ -47,7 +47,7 @@ void add_messages(Publisher *publisher)
 void add_message(Publisher *publisher)
 {
 	int i = 0;
-	while(1)
+	while(i < 20)
 	{
 		i++;
 
@@ -57,7 +57,7 @@ void add_message(Publisher *publisher)
 		mes.set_sequence_number(i);
 		mes.set_timestamp(234241);
 		mes.set_topic("TEST");
-		mes.set_uuid("wewfeer");
+		mes.set_uuid(generate_uuid_v4());
 		
 		StringData mes_str_data("Good job!!!");
 
@@ -94,22 +94,22 @@ int main(int argc, char *argv[])
 	const char *addr_sub = "tcp://localhost:4533";
 	const char *addr_req = "tcp://localhost:9928";
 
-	TestPersistenceStorage tps;
+	PostgreSqlPersistentStorage tps("messaging_core", "postgres", "postgres", "127.0.0.1", "5432");
 	TestSubscriberPersistenceStorage tsps;
+
+	if (&tps == nullptr) std::cout << "NULL!" << '\n';
 
 	Publisher publisher(ctx, addr_pub, addr_rep, &tps);
 	Subscriber subscriber(ctx, &tsps, "TEST", addr_sub, addr_req);
 
-	//add_message(&publisher);
-
-	//std::thread appender(add_messages, &publisher);
-	//std::thread poller(poll_message, &subscriber);
+	std::thread appender(add_messages, &publisher);
+	std::thread poller(poll_message, &subscriber);
 	
 	publisher.join();
 	subscriber.join();
 	tps.join();
 	tsps.join();
-	//appender.join();
-	//poller.join();
+	appender.join();
+	poller.join();
 
 }

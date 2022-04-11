@@ -23,6 +23,49 @@ enum MessageType
     REPLY
 };
 
+class MessageTypeConverter
+{
+public:
+    static MessageType fromString(std::string message_type)
+    {
+        if (message_type == "INFO") return MessageType::INFO;
+        if (message_type == "SUCCESS") return MessageType::SUCCESS;
+        if (message_type == "REJECT") return MessageType::REJECT;
+        if (message_type == "FAIL") return MessageType::FAIL;
+        if (message_type == "QUOTE") return MessageType::QUOTE;
+        if (message_type == "REPLY") return MessageType::REPLY;
+
+        return MessageType::INFO;
+    }
+    static std::string toString(MessageType message_type)
+    {
+
+        switch (message_type)
+        {
+            case MessageType::INFO:
+                return "INFO";
+                break;
+            case MessageType::SUCCESS:
+                return "SUCCESS";
+                break;
+            case MessageType::REJECT:
+                return "REJECT";
+                break;
+            case MessageType::FAIL:
+                return "FAIL";
+                break;
+            case MessageType::QUOTE:
+                return "QUOTE";
+                break;
+            case MessageType::REPLY:
+                return "REPLY";
+                break;
+        }
+
+        return "";
+    }
+};
+
 class Message
 {
 
