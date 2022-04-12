@@ -4,7 +4,10 @@ package messaging.core.subscriber;
 javac -h . Subscriber.java
  */
 
+import messaging.core.messagetemplates.Message;
 import messaging.core.utils.LibraryLoader;
+
+import java.util.Optional;
 
 public class Subscriber {
 
@@ -31,6 +34,22 @@ public class Subscriber {
     public native String poll(long nativeObjectPointer);
     public String poll(){
         return poll(nativeObjectPointer);
+    }
+    public Optional<Message> pollMessage(){
+
+        Optional<Message> messageOptional = Optional.empty();
+
+        try{
+            String json = poll();
+            if (json.length() > 0) {
+                messageOptional = Optional.of(new Message(json));
+            }
+        }catch (IllegalStateException e){
+            e.printStackTrace();
+            messageOptional = Optional.empty();
+        }
+
+        return messageOptional;
     }
 
     public long getNativeObjectPointer(){

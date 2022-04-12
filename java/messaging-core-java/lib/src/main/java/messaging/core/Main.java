@@ -5,6 +5,8 @@ import messaging.core.messagetemplates.MessageType;
 import messaging.core.publisher.Publisher;
 import messaging.core.subscriber.Subscriber;
 
+import java.util.Optional;
+
 public class Main {
 
     public static void main(String[] args) throws InterruptedException {
@@ -48,7 +50,7 @@ class Sender extends Thread {
                 );
 
                 String json = message.serialize();
-                
+
                 publisher.publish(json);
                 seqNum++;
             }catch (Exception e){
@@ -70,11 +72,14 @@ class Poller extends Thread{
     @Override
     public void run(){
         System.out.println("Poller is starting...");
+
+        Optional<Message> messageOptional = Optional.empty();
+
         while (true){
-            String msg_json = subscriber.poll(subscriber.getNativeObjectPointer());
-            if (!msg_json.equals("")){
-                System.out.println("JAVA: " + msg_json);
-            }
+
+            messageOptional = subscriber.pollMessage();
+            messageOptional.ifPresent(System.out::println);
+
         }
     }
 
