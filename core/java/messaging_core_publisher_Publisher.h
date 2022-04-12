@@ -23,6 +23,14 @@ JNIEXPORT jlong JNICALL Java_messaging_core_publisher_Publisher_nativeNew
 JNIEXPORT void JNICALL Java_messaging_core_publisher_Publisher_publish
   (JNIEnv *, jobject, jlong, jlong, jstring, jstring, jlong, jstring, jboolean, jstring);
 
+/*
+ * Class:     messaging_core_publisher_Publisher
+ * Method:    publishByJson
+ * Signature: (JLjava/lang/String;)V
+ */
+JNIEXPORT void JNICALL Java_messaging_core_publisher_Publisher_publishByJson
+  (JNIEnv *, jobject, jlong, jstring);
+
 #ifdef __cplusplus
 }
 #endif

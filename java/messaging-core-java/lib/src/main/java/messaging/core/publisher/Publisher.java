@@ -37,6 +37,8 @@ public class Publisher {
     }
 
     public native void publish(long nativeObjectPointer, long sequenceNumber, String uuid, String topic, long timestamp, String messageType, boolean needsReply, String dataJson);
+    public native void publishByJson(long nativeObjectPointer, String jsonMessage);
+
     public void publish(long sequenceNumber, String uuid, String topic, long timestamp, MessageType messageType, boolean needsReply, String dataJson){
         publish(
                 nativeObjectPointer,
@@ -59,6 +61,9 @@ public class Publisher {
                 message.isNeeds_reply(),
                 message.getData_json()
         );
+    }
+    public void publish(String jsonMessage){
+        publishByJson(nativeObjectPointer, jsonMessage);
     }
 
 }

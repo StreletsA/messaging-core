@@ -42,6 +42,15 @@ JNIEXPORT void JNICALL Java_messaging_core_publisher_Publisher_publish__JLjava_l
   	Message *msg = new Message(seq_num, jstring2string(env, uuid), jstring2string(env, topic), timestamp, MessageType::INFO, needs_reply, jstring2string(env, data_json));
   	publisher->publish(*msg);
   }
+  
+ JNIEXPORT void JNICALL Java_messaging_core_publisher_Publisher_publishByJson
+  (JNIEnv *env, jobject obj, jlong pointer, jstring json)
+  {
+  	Publisher *publisher = (Publisher*) pointer;
+  	Message *msg = new Message();
+  	msg->Deserialize(jstring2string(env, json));
+  	publisher->publish(*msg);
+  }
 
 JNIEXPORT void JNICALL Java_messaging_core_publisher_Publisher_start
   (JNIEnv *, jobject, jlong pointer)

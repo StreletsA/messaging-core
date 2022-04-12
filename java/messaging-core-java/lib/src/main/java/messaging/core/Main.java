@@ -34,7 +34,7 @@ class Sender extends Thread {
         System.out.println("Sender is starting...");
 
         int seqNum = 1;
-        while (true){
+        while (seqNum < 20){
 
             try {
                 Message message = new Message(
@@ -47,7 +47,9 @@ class Sender extends Thread {
                         "{\n\t\"string_data\":\t\"Good job!!!\"\n}"
                 );
 
-                publisher.publish(message);
+                String json = message.serialize();
+                
+                publisher.publish(json);
                 seqNum++;
             }catch (Exception e){
 
