@@ -153,8 +153,13 @@ void Publisher::rep_thread_fn()
 
         std::cout << "PUBLISHER: RECEIVED RECOVERY REQUEST: " << recovery_request.get_start_sequence_number() << " : " << recovery_request.get_end_sequence_number() << '\n';
 
-        std::list<Message> messages = persistent_storage_interface->get_messages(recovery_request.get_start_sequence_number(), recovery_request.get_end_sequence_number());
+        std::list<Message> messages;
 
+        if (persistent_storage_interface != nullptr)
+        {
+            messages = persistent_storage_interface->get_messages(recovery_request.get_start_sequence_number(), recovery_request.get_end_sequence_number());
+        }
+        
         std::cout << "PUBLISHER: MISSED MESSAGES GOT FROM STORAGE! SIZE: " << messages.size() << '\n';
 
         RecoveryResponse recovery_response;

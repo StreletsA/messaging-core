@@ -1,5 +1,23 @@
 #include "persistent_storage.hpp"
 
+PersistentStorageInterface *PersistentStorage::getPersistentStorageInterface(std::string json_params)
+{
+
+	cJSON *json = cJSON_Parse(json_params.c_str());
+
+	char* db_type = cJSON_GetObjectItemCaseSensitive(json, "databaseType")->valuestring;
+
+	PersistentStorageInterface *persistentStorageInterface = NULL;
+	
+	if (strcmp(db_type, "POSTGRESQL") == 0)
+	{
+		persistentStorageInterface = new PostgreSqlPersistentStorage(json_params);
+	}
+
+	return persistentStorageInterface;
+
+}
+
 TestPersistenceStorage::TestPersistenceStorage()
 {
 	store_thread = new std::thread(&TestPersistenceStorage::thread_fn, this);
@@ -196,6 +214,32 @@ PostgreSqlPersistentStorage::PostgreSqlPersistentStorage
 )
 {
 
+	connect(dbname, user, password, hostaddr, port);
+
+}
+
+PostgreSqlPersistentStorage::PostgreSqlPersistentStorage(std::string json_params)
+{
+	cJSON *json = cJSON_Parse(json_params.c_str());
+
+	std::string dbname = cJSON_GetObjectItemCaseSensitive(json, "dbName")->valuestring;
+	std::string user = cJSON_GetObjectItemCaseSensitive(json, "user")->valuestring;
+	std::string password = cJSON_GetObjectItemCaseSensitive(json, "password")->valuestring;
+	std::string hostaddr = cJSON_GetObjectItemCaseSensitive(json, "hostAddress")->valuestring;
+	std::string port = cJSON_GetObjectItemCaseSensitive(json, "port")->valuestring;
+
+	connect(dbname, user, password, hostaddr, port);
+}
+
+void PostgreSqlPersistentStorage::connect
+(
+	std::string dbname,
+    std::string user,
+    std::string password,
+    std::string hostaddr,
+    std::string port
+)
+{
 	connection_string = \
 	"dbname = " + dbname +\
 	" user = " + user + \

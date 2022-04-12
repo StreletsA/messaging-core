@@ -2,7 +2,7 @@ package messaging.core.persistence;
 
 public enum DatabaseType {
 
-    NULL,
+    NULL_DB,
     POSTGRESQL
 
 }

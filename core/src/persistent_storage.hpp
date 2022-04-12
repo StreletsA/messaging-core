@@ -12,6 +12,13 @@ using namespace pqxx;
 
 class PersistentStorageInterface;
 class TestSubscriberPersistenceStorage;
+class PostgreSqlPersistentStorage;
+
+class PersistentStorage
+{
+public:
+    static PersistentStorageInterface *getPersistentStorageInterface(std::string json_params);
+};
 
 class PersistentStorageInterface
 {
@@ -21,16 +28,7 @@ public:
     virtual void store_message(Message message) = 0;
     virtual long load_sequence_number() = 0;
 
-};
-
-
-class EmbeddedPersistenceStorage : public PersistentStorageInterface
-{
-
-public:
-    std::list<Message> get_messages(long start, long end);
-    void store_message(Message message);
-    long load_sequence_number();
+    virtual void join() = 0;
 
 };
 
@@ -97,6 +95,7 @@ public:
         std::string hostaddr,
         std::string port
     );
+    PostgreSqlPersistentStorage(std::string json_params);
 
     virtual std::list<Message> get_messages(long start, long end);
     virtual void store_message(Message message);
@@ -114,6 +113,14 @@ private:
 
     long sequence_number = 0;
 
+    void connect
+    (
+        std::string dbname,
+        std::string user,
+        std::string password,
+        std::string hostaddr,
+        std::string port
+    );
     void thread_fn();
     std::string create_insert_sql(Message message);
     std::string create_select_sql(long start, long end);
