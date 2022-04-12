@@ -6,16 +6,9 @@
 
 /*
 
-	g++ main.cpp messaging-core/publisher.cpp messaging-core/subscriber.cpp messaging-core/tools/uuid.cpp messaging-core/tools/cJSON.c messaging-core/datatypes.cpp messaging-core/persistent_storage.cpp -lzmq -lpthread -o core
-	
+	g++ *.cpp tools/*.c tools/*.cpp -lzmq -lpthread -lpqxx -o core
+
 	./core
-
-	CREATE LIB:
-	g++ -fPIC main.cpp messaging-core/publisher.cpp messaging-core/subscriber.cpp messaging-core/tools/uuid.cpp messaging-core/tools/cJSON.c messaging-core/datatypes.cpp messaging-core/serializable.cpp messaging-core/persistent_storage.cpp -lzmq -lpthread -o messaging-core.o
-
-	g++ messaging-core.o -shared -o lib-messaging-core.so
-
-	/home/andrey/Development/Projects/Ammer/message-core-cpp/src/libmessaging-core.so
 
 */
 
@@ -29,7 +22,7 @@ void add_messages(Publisher *publisher)
 		Message mes;
 		mes.set_message_type(MessageType::INFO);
 		mes.set_needs_reply(false);
-		mes.set_sequence_number(i);
+		//mes.set_sequence_number(i);
 		mes.set_timestamp(234241);
 		mes.set_topic("TEST");
 		mes.set_uuid(generate_uuid_v4());

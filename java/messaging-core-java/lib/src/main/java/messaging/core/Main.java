@@ -2,6 +2,8 @@ package messaging.core;
 
 import messaging.core.messagetemplates.Message;
 import messaging.core.messagetemplates.MessageType;
+import messaging.core.persistence.PersistentStorage;
+import messaging.core.persistence.PostgreSqlPersistentStorage;
 import messaging.core.publisher.Publisher;
 import messaging.core.subscriber.Subscriber;
 
@@ -11,7 +13,9 @@ public class Main {
 
     public static void main(String[] args) throws InterruptedException {
 
-        Publisher publisher = new Publisher("tcp://*:2033", "tcp://*:5553");
+        PersistentStorage storage = new PostgreSqlPersistentStorage("postgres", "postgres", "127.0.0.1", "5432");
+
+        Publisher publisher = new Publisher(storage,"tcp://*:2033", "tcp://*:5553");
         Subscriber subscriber = new Subscriber("TEST", "tcp://localhost:2033", "tcp://localhost:5553");
 
         Sender sender = new Sender(publisher);

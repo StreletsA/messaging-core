@@ -36,7 +36,6 @@ public class Message {
     }
 
     public boolean deserialize(String json) {
-        System.out.println("JSON for deserialization: " + json);
         ObjectMapper mapper = new ObjectMapper();
 
         try {

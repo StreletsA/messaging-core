@@ -39,6 +39,25 @@ Message::Message
     this->data_json = data_json;
 }
 
+Message::Message
+(
+    std::string uuid,
+    std::string topic,
+    long timestamp,
+    MessageType message_type,
+    bool needs_reply,
+    std::string data_json
+)
+{
+    this->sequence_number = 0;
+    this->uuid = generate_uuid_v4();
+    this->topic = topic;
+    this->timestamp = timestamp;
+    this->message_type = message_type;
+    this->needs_reply = needs_reply;
+    this->data_json = data_json;
+}
+
 std::string Message::Serialize()
 {
 

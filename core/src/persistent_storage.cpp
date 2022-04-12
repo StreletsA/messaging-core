@@ -120,6 +120,7 @@ void TestPersistenceStorage::detach()
 TestSubscriberPersistenceStorage::TestSubscriberPersistenceStorage()
 {
 	store_thread = new std::thread(&TestSubscriberPersistenceStorage::thread_fn, this);
+	sequence_number = 410;
 }
 
 std::list<Message> TestSubscriberPersistenceStorage::get_messages(long start, long end)
@@ -143,6 +144,11 @@ std::list<Message> TestSubscriberPersistenceStorage::get_messages(long start, lo
 
     return messages;
 
+}
+
+long TestSubscriberPersistenceStorage::get_sequence_number()
+{
+	return sequence_number;
 }
 
 std::list<Message> TestSubscriberPersistenceStorage::get_messages()
@@ -249,7 +255,7 @@ void PostgreSqlPersistentStorage::connect
 
 	try
 	{
-		C = new connection(connection_string);
+		connection *C = new connection(connection_string);
 		if (C->is_open())
 		{
 			std::cout << "PostgreSQL STORAGE: database opened successfully!" << '\n';
@@ -265,20 +271,29 @@ void PostgreSqlPersistentStorage::connect
 		std::cerr << e.what() << std::endl;
 		return;
 	}
+
+	sequence_number = load_sequence_number();
+	std::cout << "POSTGRESQL: SEQ_NUM -> " << sequence_number << '\n';
 	
 	store_thread = new std::thread(&PostgreSqlPersistentStorage::thread_fn, this);
 }
 
 void PostgreSqlPersistentStorage::store_message(Message message)
 {
+	std::lock_guard<std::mutex> lg(g_mutex);
 	store_message_queue.push(message);
     sequence_number++;
+}
+
+long PostgreSqlPersistentStorage::get_sequence_number()
+{
+	return sequence_number;
 }
 
 std::string PostgreSqlPersistentStorage::create_insert_sql(Message message)
 {
 
-	std::string sequence_number_str = std::to_string(message.get_sequence_number());
+	//std::string sequence_number_str = std::to_string(message.get_sequence_number());
 	std::string uuid_str = message.get_uuid();
 	std::string topic_str = message.get_topic();
 	std::string timestamp_str = std::to_string(message.get_timestamp());
@@ -286,9 +301,19 @@ std::string PostgreSqlPersistentStorage::create_insert_sql(Message message)
 	std::string needs_reply_str = message.get_needs_reply() ? "true" : "false";
 	std::string data_json_str = message.get_data();
 
+	/*
 	std::string sql = "INSERT INTO messages (sequence_number, uuid, topic, timestamp, message_type, needs_reply, data_json) " \
 					"VALUES(" + sequence_number_str + ", " \
 					"'" + uuid_str + "', " \
+					"'" + topic_str + "', " \
+					"" + timestamp_str + ", " \
+					"'" + message_type_str + "', " \
+					"" + needs_reply_str + ", " \
+					"'" + data_json_str + "');";
+	*/
+
+	std::string sql = "INSERT INTO messages (uuid, topic, timestamp, message_type, needs_reply, data_json) " \
+					"VALUES('" + uuid_str + "', " \
 					"'" + topic_str + "', " \
 					"" + timestamp_str + ", " \
 					"'" + message_type_str + "', " \
@@ -304,7 +329,7 @@ std::string PostgreSqlPersistentStorage::create_select_sql(long start, long end)
 	std::string start_str = std::to_string(start);
 	std::string end_str = std::to_string(end);
 
-	std::string sql = "SELECT * FROM messages WHERE sequence_number > " + start_str + " AND sequence_number < " + end_str;
+	std::string sql = "SELECT * FROM messages WHERE sequence_number >= " + start_str + " AND sequence_number < " + end_str;
 
 	return sql;
 }
@@ -315,11 +340,16 @@ std::list<Message> PostgreSqlPersistentStorage::get_messages(long start, long en
 	std::list<Message> messages;
 
 	if (sequence_number == 0) return messages;
+
+	// Start-up
+	if (end == 0) end = sequence_number;
+
+	end++;
 	
 	try
 	{
 		std::string sql = create_select_sql(start, end);
-
+		connection *C = new connection(connection_string);
 		nontransaction N(*C);
 		result R( N.exec( sql ));
 
@@ -354,6 +384,7 @@ std::list<Message> PostgreSqlPersistentStorage::get_messages(long start, long en
 				data_json
 			);
 
+			std::lock_guard<std::mutex> lg(g_mutex);
 			messages.push_back(*msg);
 
 		}
@@ -369,6 +400,20 @@ std::list<Message> PostgreSqlPersistentStorage::get_messages(long start, long en
 
 long PostgreSqlPersistentStorage::load_sequence_number()
 {
+	std::string sql = "SELECT max(sequence_number) FROM messages;";
+
+	try{
+		connection *C = new connection(connection_string);
+		nontransaction N(*C);
+		result R( N.exec( sql ));
+		sequence_number = R.begin()[0].as<int>();
+	}
+	catch (const std::exception &e)
+	{
+		std::cerr << e.what() << std::endl;
+	}
+
+
 	return sequence_number;
 }
 
@@ -391,9 +436,11 @@ void PostgreSqlPersistentStorage::thread_fn()
 			
 			try
 			{
+				std::lock_guard<std::mutex> lg(g_mutex);
 				Message message = store_message_queue.front();
 				store_message_queue.pop();
 
+				connection *C = new connection(connection_string);
 				work W(*C);
 				W.exec(create_insert_sql(message));
 				W.commit();

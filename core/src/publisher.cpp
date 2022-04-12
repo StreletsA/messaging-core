@@ -95,6 +95,19 @@ void Publisher::pub_thread_fn()
             // Get message from queue
             Message mes = incoming_message_queue.front();
             incoming_message_queue.pop();
+            sequence_number++;
+
+            if(persistent_storage_interface != nullptr)
+            {
+                mes.set_sequence_number(persistent_storage_interface->get_sequence_number() + 1);
+                persistent_storage_interface->store_message(mes);
+            }
+            else
+            {
+                mes.set_sequence_number(sequence_number);
+            }
+
+            std::cout << "PUBLISHER: MSG SEQ_NUM -> " << mes.get_sequence_number() << '\n';
 
             // Create string data for sending: TOPIC + DATA
             std::string topic = mes.get_topic();
@@ -106,11 +119,6 @@ void Publisher::pub_thread_fn()
 
             // Send message
             pub_socket->send (message);
-
-            if(persistent_storage_interface != nullptr)
-            {
-                persistent_storage_interface->store_message(mes);
-            }
 
             //std::cout << "SENT: " << str_data << '\n';
             
@@ -158,9 +166,8 @@ void Publisher::rep_thread_fn()
         if (persistent_storage_interface != nullptr)
         {
             messages = persistent_storage_interface->get_messages(recovery_request.get_start_sequence_number(), recovery_request.get_end_sequence_number());
+            std::cout << "PUBLISHER: MISSED MESSAGES GOT FROM STORAGE! SIZE: " << messages.size() << '\n';
         }
-        
-        std::cout << "PUBLISHER: MISSED MESSAGES GOT FROM STORAGE! SIZE: " << messages.size() << '\n';
 
         RecoveryResponse recovery_response;
         recovery_response.set_messages(messages);

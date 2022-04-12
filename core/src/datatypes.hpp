@@ -82,6 +82,15 @@ public:
         bool needs_reply,
         std::string data_json
     );
+    Message
+    (
+        std::string uuid,
+        std::string topic,
+        long timestamp,
+        MessageType message_type,
+        bool needs_reply,
+        std::string data_json
+    );
 
     std::string Serialize();
     cJSON* SerializeToCJSON();

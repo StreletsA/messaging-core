@@ -6,6 +6,7 @@ javac -h . Subscriber.java
 
 import messaging.core.messagetemplates.Message;
 import messaging.core.messagetemplates.MessageType;
+import messaging.core.persistence.PersistentStorage;
 import messaging.core.utils.LibraryLoader;
 
 public class Publisher {
@@ -18,13 +19,13 @@ public class Publisher {
         LibraryLoader.loadPublisherLib();
     }
 
-    public Publisher(String pubConnectionAddress, String repConnectionAddress) {
+    public Publisher(PersistentStorage storage, String pubConnectionAddress, String repConnectionAddress) {
         this.pubConnectionAddress = pubConnectionAddress;
         this.repConnectionAddress = repConnectionAddress;
-        nativeObjectPointer = nativeNew(pubConnectionAddress, repConnectionAddress);
+        nativeObjectPointer = nativeNew(storage.serialize(), pubConnectionAddress, repConnectionAddress);
     }
 
-    private native long nativeNew(String pubConnectionAddress, String repConnectionAddress);
+    private native long nativeNew(String persistentStorageJsonParams, String pubConnectionAddress, String repConnectionAddress);
 
     public long getNativeObjectPointer() {
         return nativeObjectPointer;

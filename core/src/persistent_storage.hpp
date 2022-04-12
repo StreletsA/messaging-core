@@ -28,6 +28,7 @@ public:
     virtual void store_message(Message message) = 0;
     virtual long load_sequence_number() = 0;
 
+    virtual long get_sequence_number() = 0;
     virtual void join() = 0;
 
 };
@@ -66,7 +67,7 @@ public:
     virtual std::list<Message> get_messages(long start, long end);
     virtual void store_message(Message message);
     virtual long load_sequence_number();
-
+    virtual long get_sequence_number();
     std::list<Message> get_messages();
 
     void join();
@@ -101,11 +102,12 @@ public:
     virtual void store_message(Message message);
     virtual long load_sequence_number();
 
+    long get_sequence_number();
+
     void join();
     void detach();
 
 private:
-    connection *C;
     std::string connection_string;
     std::queue<Message> store_message_queue;
     std::thread *store_thread;
