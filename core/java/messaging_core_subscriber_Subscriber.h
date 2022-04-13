@@ -17,22 +17,6 @@ JNIEXPORT jlong JNICALL Java_messaging_core_subscriber_Subscriber_nativeNew
 
 /*
  * Class:     messaging_core_subscriber_Subscriber
- * Method:    poll
- * Signature: (J)Ljava/lang/String;
- */
-JNIEXPORT jstring JNICALL Java_messaging_core_subscriber_Subscriber_poll
-  (JNIEnv *, jobject, jlong);
-
-/*
- * Class:     messaging_core_subscriber_Subscriber
- * Method:    start
- * Signature: (J)V
- */
-JNIEXPORT void JNICALL Java_messaging_core_subscriber_Subscriber_start
-  (JNIEnv *, jobject, jlong);
-
-/*
- * Class:     messaging_core_subscriber_Subscriber
  * Method:    join
  * Signature: (J)V
  */
@@ -41,10 +25,10 @@ JNIEXPORT void JNICALL Java_messaging_core_subscriber_Subscriber_join
 
 /*
  * Class:     messaging_core_subscriber_Subscriber
- * Method:    detach
- * Signature: (J)V
+ * Method:    poll
+ * Signature: (J)Ljava/lang/String;
  */
-JNIEXPORT void JNICALL Java_messaging_core_subscriber_Subscriber_detach
+JNIEXPORT jstring JNICALL Java_messaging_core_subscriber_Subscriber_poll
   (JNIEnv *, jobject, jlong);
 
 #ifdef __cplusplus

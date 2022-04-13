@@ -10,10 +10,19 @@ extern "C" {
 /*
  * Class:     messaging_core_publisher_Publisher
  * Method:    nativeNew
- * Signature: (Ljava/lang/String;Ljava/lang/String;)J
+ * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)J
  */
 JNIEXPORT jlong JNICALL Java_messaging_core_publisher_Publisher_nativeNew
-  (JNIEnv *, jobject, jstring, jstring);
+  (JNIEnv *, jobject, jstring, jstring, jstring);
+
+/*
+ * Class:     messaging_core_publisher_Publisher
+ * Method:    join
+ * Signature: (J)V
+ */
+JNIEXPORT void JNICALL Java_messaging_core_publisher_Publisher_join
+  (JNIEnv *, jobject, jlong);
+
 
 /*
  * Class:     messaging_core_publisher_Publisher

@@ -3,6 +3,7 @@
 #include <thread>
 #include "publisher.hpp"
 #include "subscriber.hpp"
+#include "network_params.hpp"
 
 /*
 
@@ -56,7 +57,7 @@ void add_message(Publisher *publisher)
 
 		mes.set_data(mes_str_data.Serialize());
 		//std::cout << "Mes str -> " << mes_str_data.Serialize() << '\n';
-		publisher->publish(mes);
+		publisher->publish(mes.Serialize());
 
 		//std::cout << "TEST PUBLISHED! -> " << mes.Serialize() << '\n';
 
@@ -80,7 +81,8 @@ void poll_message(Subscriber *subscriber)
 int main(int argc, char *argv[])
 {
 	std::cout << "Start!" << '\n';
-	zmq::context_t *ctx = new zmq::context_t(2);
+	//zmq::context_t *ctx = new zmq::context_t(2);
+	zmq::context_t *ctx = Context::getInstance().get_context();
 
 	const char *addr_pub = "tcp://*:4533";
 	const char *addr_rep = "tcp://*:9928";
@@ -89,7 +91,7 @@ int main(int argc, char *argv[])
 
 	std::string json_params = "{\"databaseType\": \"POSTGRESQL\", \"dbName\": \"messaging_core\", \"user\": \"postgres\", \"password\": \"postgres\", \"hostAddress\": \"127.0.0.1\", \"port\": \"5432\"}";
 
-	// PostgreSqlPersistentStorage tps("messaging_core", "postgres", "postgres", "127.0.0.1", "5432");
+	//PostgreSqlPersistentStorage tps("messaging_core", "postgres", "postgres", "127.0.0.1", "5432");
 	PersistentStorageInterface *tps = PersistentStorage::getPersistentStorageInterface(json_params);
 	TestSubscriberPersistenceStorage tsps;
 

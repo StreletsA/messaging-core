@@ -15,6 +15,7 @@ Subscriber::Subscriber(zmq::context_t *context, PersistentStorageInterface *stor
     std::cout << "SUBSCRIBER: SUBSCRIBER CREATING..." << '\n';
 
     std::cout << "SUBSCRIBER: SUBSCRIBER CONNECTING..." << '\n';
+    
     sub_socket->connect(sub_connection_address);
     std::cout << "SUBSCRIBER: SUBSCRIBER CONNECTED!" << '\n';
 

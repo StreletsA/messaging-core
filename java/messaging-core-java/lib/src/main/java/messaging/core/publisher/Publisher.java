@@ -1,7 +1,7 @@
 package messaging.core.publisher;
 
 /*
-javac -h . Subscriber.java
+javac -h . Publisher.java
  */
 
 import messaging.core.messagetemplates.Message;
@@ -22,10 +22,16 @@ public class Publisher {
     public Publisher(PersistentStorage storage, String pubConnectionAddress, String repConnectionAddress) {
         this.pubConnectionAddress = pubConnectionAddress;
         this.repConnectionAddress = repConnectionAddress;
-        nativeObjectPointer = nativeNew(storage.serialize(), pubConnectionAddress, repConnectionAddress);
+
+        String json_params = storage.serialize();
+
+        nativeObjectPointer = nativeNew(json_params, pubConnectionAddress, repConnectionAddress);
     }
 
     private native long nativeNew(String persistentStorageJsonParams, String pubConnectionAddress, String repConnectionAddress);
+
+    public native void join(long nativeObjectPointer);
+    public native void stop(long nativeObjectPointer);
 
     public long getNativeObjectPointer() {
         return nativeObjectPointer;

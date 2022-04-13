@@ -43,6 +43,8 @@ public:
     virtual void store_message(Message message);
     virtual long load_sequence_number();
 
+    virtual long get_sequence_number();
+
     void join();
     void detach();
 

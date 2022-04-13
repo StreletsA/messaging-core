@@ -3,6 +3,8 @@
 PersistentStorageInterface *PersistentStorage::getPersistentStorageInterface(std::string json_params)
 {
 
+	std::cout << "PERSISTENT STORAGE: JSON_PARAMS -> " << json_params << '\n';
+
 	cJSON *json = cJSON_Parse(json_params.c_str());
 
 	char* db_type = cJSON_GetObjectItemCaseSensitive(json, "databaseType")->valuestring;
@@ -97,7 +99,10 @@ void TestPersistenceStorage::thread_fn()
 	}
 
 }
-
+long TestPersistenceStorage::get_sequence_number()
+{
+	return sequence_number;
+}
 void TestPersistenceStorage::join()
 {
 	store_thread->join();
@@ -120,7 +125,7 @@ void TestPersistenceStorage::detach()
 TestSubscriberPersistenceStorage::TestSubscriberPersistenceStorage()
 {
 	store_thread = new std::thread(&TestSubscriberPersistenceStorage::thread_fn, this);
-	sequence_number = 410;
+	sequence_number = 0;
 }
 
 std::list<Message> TestSubscriberPersistenceStorage::get_messages(long start, long end)
@@ -226,6 +231,9 @@ PostgreSqlPersistentStorage::PostgreSqlPersistentStorage
 
 PostgreSqlPersistentStorage::PostgreSqlPersistentStorage(std::string json_params)
 {
+
+	std::cout << "POSTGRESQL: JSON_PARAMS -> " << json_params << '\n';
+
 	cJSON *json = cJSON_Parse(json_params.c_str());
 
 	std::string dbname = cJSON_GetObjectItemCaseSensitive(json, "dbName")->valuestring;

@@ -11,6 +11,7 @@ import java.util.Optional;
 
 public class Subscriber {
 
+
     private long nativeObjectPointer;
     private final String topic;
     private final String subConnectionAddress;
@@ -30,6 +31,9 @@ public class Subscriber {
 
     private native long nativeNew(String topic, String subConnectionAddress, String reqConnectionAddress);
 
+    private native void join(long nativeObjectPointer);
+    private native void stop(long nativeObjectPointer);
+
     // return message as json
     public native String poll(long nativeObjectPointer);
     public String poll(){
@@ -41,6 +45,7 @@ public class Subscriber {
 
         try{
             String json = poll();
+            System.out.println("JAVA: SUBSCRIBER: POLLED JSON -> " + json);
             if (json.length() > 0) {
                 messageOptional = Optional.of(new Message(json));
             }
@@ -64,5 +69,4 @@ public class Subscriber {
     public String getReqConnectionAddress(){
         return reqConnectionAddress;
     }
-
 }
