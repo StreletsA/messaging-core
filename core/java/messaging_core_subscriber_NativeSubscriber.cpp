@@ -1,4 +1,4 @@
-#include "messaging_core_subscriber_Subscriber.h"
+#include "messaging_core_subscriber_NativeSubscriber.h"
 #include <string>
 #include <iostream>
 #include "../src/persistent_storage.hpp"
@@ -10,7 +10,7 @@
 using namespace std;
 
 
-JNIEXPORT jlong JNICALL Java_messaging_core_subscriber_Subscriber_nativeNew
+JNIEXPORT jlong JNICALL Java_messaging_core_subscriber_NativeSubscriber_nativeNew
   (JNIEnv *env, jobject obj, jstring topic, jstring sub_connection_address, jstring req_connection_address)
   {
       zmq::context_t *ctx = Context::getInstance().get_context();
@@ -25,7 +25,7 @@ JNIEXPORT jlong JNICALL Java_messaging_core_subscriber_Subscriber_nativeNew
       return (long) subscriber;
   }
   
-  JNIEXPORT jstring JNICALL Java_messaging_core_subscriber_Subscriber_poll
+JNIEXPORT jstring JNICALL Java_messaging_core_subscriber_NativeSubscriber_poll
   (JNIEnv *env, jobject obj, jlong pointer)
   {
   	Subscriber *subscriber = (Subscriber *) pointer;

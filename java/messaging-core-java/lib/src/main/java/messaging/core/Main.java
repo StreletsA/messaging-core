@@ -12,32 +12,18 @@ import java.util.UUID;
 
 public class Main {
 
-    static Publisher publisher;
-    static Subscriber subscriber;
+    public static void main(String[] args) {
 
-    public static void main(String[] args) throws InterruptedException {
+        PersistentStorage storage = new PostgreSqlPersistentStorage("postgres", "postgres", "127.0.0.1", "5432");
+        Publisher publisher = new Publisher(storage, "tcp://*:2033", "tcp://*:5553");
 
-        Thread pub = new Thread(() -> {
-            PersistentStorage storage = new PostgreSqlPersistentStorage("postgres", "postgres", "127.0.0.1", "5432");
-            publisher = new Publisher(storage,"tcp://*:2033", "tcp://*:5553");
-        });
-        Thread sub = new Thread(() -> {
-            subscriber = new Subscriber("TEST", "tcp://localhost:2033", "tcp://localhost:5553");
-        });
-
-        pub.start();
-        pub.join();
-
-        sub.start();
-        sub.join();
+        Subscriber subscriber = new Subscriber("TEST", "tcp://localhost:2033", "tcp://localhost:5553");
 
         Sender sender = new Sender(publisher);
         sender.start();
-        sender.join();
-        
+
         Poller poller = new Poller(subscriber);
         poller.start();
-        poller.join();
 
     }
 
@@ -56,7 +42,7 @@ class Sender extends Thread {
         System.out.println("Sender is starting...");
 
         int seqNum = 0;
-        while (true){
+        while (seqNum < 10){
 
             try {
                 Message message = new Message(
@@ -97,7 +83,7 @@ class Poller extends Thread{
         Optional<Message> messageOptional = Optional.empty();
 
         int i = 0;
-        while (true){
+        while (i < 10){
             i++;
 
             messageOptional = subscriber.pollMessage();

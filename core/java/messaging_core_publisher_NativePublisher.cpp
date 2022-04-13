@@ -1,4 +1,4 @@
-#include "messaging_core_publisher_Publisher.h"
+#include "messaging_core_publisher_NativePublisher.h"
 #include <string>
 #include <iostream>
 #include "../src/datatypes.hpp"
@@ -8,7 +8,7 @@
 #include <zmq.hpp>
 #include "utils/utils.h"
 
-JNIEXPORT jlong JNICALL Java_messaging_core_publisher_Publisher_nativeNew
+JNIEXPORT jlong JNICALL Java_messaging_core_publisher_NativePublisher_nativeNew
   (JNIEnv *env, jobject obj, jstring json_params, jstring pub_addr, jstring rep_addr)
   {
     zmq::context_t *ctx = Context::getInstance().get_context();
@@ -27,28 +27,21 @@ JNIEXPORT jlong JNICALL Java_messaging_core_publisher_Publisher_nativeNew
     return (long) publisher;
   }
 
- JNIEXPORT void JNICALL Java_messaging_core_publisher_Publisher_publish
+JNIEXPORT void JNICALL Java_messaging_core_publisher_NativePublisher_publish
   (JNIEnv *env, jobject obj, jlong pointer, jlong seq_num, jstring uuid, jstring topic, jlong timestamp, jstring msg_type, jboolean needs_reply, jstring data_json)
   {
   	Publisher *publisher = (Publisher*) pointer;
   	Message *msg = new Message(seq_num, jstring2string(env, uuid), jstring2string(env, topic), timestamp, MessageType::INFO, needs_reply, jstring2string(env, data_json));
   	publisher->publish(*msg);
   }
-  
- JNIEXPORT void JNICALL Java_messaging_core_publisher_Publisher_publishByJson
-  (JNIEnv *env, jobject obj, jlong pointer, jstring json)
-  {
-  	Publisher *publisher = (Publisher*) pointer;
-  	//Message *msg = new Message();
-  	//msg->Deserialize(jstring2string(env, json));
-  	publisher->publish(jstring2string(env, json));
-  }
 
-  JNIEXPORT void JNICALL Java_messaging_core_publisher_Publisher_join
-  (JNIEnv *, jobject, jlong pointer)
+JNIEXPORT void JNICALL Java_messaging_core_publisher_NativePublisher_publishByJson
+  (JNIEnv *env, jobject obj, jlong pointer, jstring json)
   {
 
     Publisher *publisher = (Publisher*) pointer;
-    publisher->join();
+  	//Message *msg = new Message();
+  	//msg->Deserialize(jstring2string(env, json));
+  	publisher->publish(jstring2string(env, json));
 
   }

@@ -1,41 +1,35 @@
 package messaging.core.publisher;
 
-/*
-javac -h . Publisher.java
- */
-
 import messaging.core.messagetemplates.Message;
 import messaging.core.messagetemplates.MessageType;
 import messaging.core.persistence.PersistentStorage;
-import messaging.core.utils.LibraryLoader;
 
 public class Publisher {
 
+    private NativePublisher publisher;
     private long nativeObjectPointer;
     private final String pubConnectionAddress;
     private final String repConnectionAddress;
 
-    static {
-        LibraryLoader.loadPublisherLib();
-    }
+    public Publisher(PersistentStorage storage, String pubConnectionAddress, String repConnectionAddress){
 
-    public Publisher(PersistentStorage storage, String pubConnectionAddress, String repConnectionAddress) {
         this.pubConnectionAddress = pubConnectionAddress;
         this.repConnectionAddress = repConnectionAddress;
 
-        String json_params = storage.serialize();
+        Thread pubCreator = new Thread(() -> {
+            publisher = new NativePublisher(storage.serialize(), pubConnectionAddress, repConnectionAddress);
+            nativeObjectPointer = publisher.getNativeObjectPointer();
+        });
 
-        nativeObjectPointer = nativeNew(json_params, pubConnectionAddress, repConnectionAddress);
+        pubCreator.start();
+
+        try {
+            pubCreator.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
-    private native long nativeNew(String persistentStorageJsonParams, String pubConnectionAddress, String repConnectionAddress);
-
-    public native void join(long nativeObjectPointer);
-    public native void stop(long nativeObjectPointer);
-
-    public long getNativeObjectPointer() {
-        return nativeObjectPointer;
-    }
     public String getPubConnectionAddress() {
         return pubConnectionAddress;
     }
@@ -43,11 +37,8 @@ public class Publisher {
         return repConnectionAddress;
     }
 
-    public native void publish(long nativeObjectPointer, long sequenceNumber, String uuid, String topic, long timestamp, String messageType, boolean needsReply, String dataJson);
-    public native void publishByJson(long nativeObjectPointer, String jsonMessage);
-
     public void publish(long sequenceNumber, String uuid, String topic, long timestamp, MessageType messageType, boolean needsReply, String dataJson){
-        publish(
+        publisher.publish(
                 nativeObjectPointer,
                 sequenceNumber,
                 uuid,
@@ -70,7 +61,7 @@ public class Publisher {
         );
     }
     public void publish(String jsonMessage){
-        publishByJson(nativeObjectPointer, jsonMessage);
+        publisher.publishByJson(nativeObjectPointer, jsonMessage);
     }
 
 }
