@@ -23,11 +23,11 @@ public class Publisher {
 
         pubCreator.start();
 
-        try {
-            pubCreator.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            pubCreator.join();
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
     }
 
     public String getPubConnectionAddress() {

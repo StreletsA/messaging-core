@@ -12,7 +12,7 @@ public class NativeSubscriber {
     private long nativeObjectPointer;
 
     static {
-        LibraryLoader.loadSubscriberLib();
+        LibraryLoader.loadMessagingCoreLib();
     }
 
     public NativeSubscriber(String topic, String subConnectionAddress, String reqConnectionAddress) {

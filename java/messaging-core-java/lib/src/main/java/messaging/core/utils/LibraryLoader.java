@@ -1,57 +1,31 @@
 package messaging.core.utils;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.Properties;
+import messaging.core.config.Configuration;
 
 public class LibraryLoader {
 
-    private static final String RESOURCE_FILE_PATH = "/home/andrey/Development/Projects/Ammer/messaging-core/java/messaging-core-java/lib/src/main/resources/config.properties";
-    private static final String PROPERTY_NAME = "lib.messaging.core.path";
-    private static final String SUBSCRIBER_LIB = "libsubscriber.so";
-    private static final String PUBLISHER_LIB = "libpublisher.so";
-
-    private static FileInputStream fis;
-    private static Properties property;
-
-    static {
-        property = new Properties();
-        try {
-            fis = new FileInputStream(RESOURCE_FILE_PATH);
-            property.load(fis);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
+    // Library's name is 'libmessaging_core.so. 'lib' just a prefix for linux library loader system'
+    private static final String MESSAGING_CORE_LIB = "messaging_core.so";
 
     public static String getLibPath(String libName){
         StringBuilder path = new StringBuilder();
 
-        path.append(property.getProperty(PROPERTY_NAME));
+        path.append(Configuration.getLibMessagingCorePath());
         path.append(libName);
 
         return path.toString();
     }
 
-    public static String getSubscriberLibPath(){
+    public static String getMessagingCoreLibPath(){
 
-        return getLibPath(SUBSCRIBER_LIB);
-
-    }
-
-    public static String getPublisherLibPath(){
-
-        return getLibPath(PUBLISHER_LIB);
+        return getLibPath(MESSAGING_CORE_LIB);
 
     }
 
-    public static void loadPublisherLib(){
-        System.load(getPublisherLibPath());
-    }
+    public static void loadMessagingCoreLib(){
 
-    public static void loadSubscriberLib(){
-        System.load(getSubscriberLibPath());
+        System.load(getMessagingCoreLibPath());
+
     }
 
 }

@@ -12,7 +12,7 @@ public class NativePublisher {
 
 
     static {
-        LibraryLoader.loadPublisherLib();
+        LibraryLoader.loadMessagingCoreLib();
     }
 
     public NativePublisher(String persistentStorageJsonParams, String pubConnectionAddress, String repConnectionAddress) {

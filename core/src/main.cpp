@@ -16,8 +16,11 @@
 void add_messages(Publisher *publisher)
 {
 	int i = 0;
-	while(i < 20)
+	while(true)
 	{
+
+		std::this_thread::sleep_for (std::chrono::microseconds(250000));
+
 		i++;
 
 		Message mes;
@@ -33,8 +36,6 @@ void add_messages(Publisher *publisher)
 		mes.set_data(mes_str_data.Serialize());
 
 		publisher->publish(mes);
-
-		std::this_thread::sleep_for(std::chrono::microseconds(1000));
 	}
 }
 
@@ -98,16 +99,16 @@ int main(int argc, char *argv[])
 	if (&tps == nullptr) std::cout << "NULL!" << '\n';
 
 	Publisher publisher(ctx, addr_pub, addr_rep, tps);
-	Subscriber subscriber(ctx, &tsps, "TEST", addr_sub, addr_req);
+	//Subscriber subscriber(ctx, &tsps, "TEST", addr_sub, addr_req);
 
 	std::thread appender(add_messages, &publisher);
-	std::thread poller(poll_message, &subscriber);
+	//std::thread poller(poll_message, &subscriber);
 	
 	publisher.join();
-	subscriber.join();
+	//subscriber.join();
 	tps->join();
 	tsps.join();
 	appender.join();
-	poller.join();
+	//poller.join();
 
 }

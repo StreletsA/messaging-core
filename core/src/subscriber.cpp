@@ -151,24 +151,27 @@ void Subscriber::thread_fn()
         // Get message from json. Message data is still json format.
         if (message_json.size() > 0)
         {
-            Message mes;
-            mes.Deserialize(message_json);
-            std::cout << "SUBSCRIBER: RECEIVED MESSAGE WITH SEQ_NUM: " << mes.get_sequence_number() << '\n';
+            Message msg;
+            msg.Deserialize(message_json);
 
-            if (mes.get_sequence_number() > sequence_number + 1)
+            long msg_sequence_number = msg.get_sequence_number();
+
+            std::cout << "SUBSCRIBER: RECEIVED MESSAGE WITH SEQ_NUM: " << msg_sequence_number << '\n';
+
+            if (msg_sequence_number > sequence_number + 1)
             {
-                do_recovery(sequence_number + 1, mes.get_sequence_number());
+                do_recovery(sequence_number + 1, msg_sequence_number);
                 continue;
             }
-            if (mes.get_sequence_number() < sequence_number + 1)
+            if (msg_sequence_number < sequence_number + 1)
             {
                 continue;
             }
 
             // Add message into messages queue
-            messages.push(mes);
+            messages.push(msg);
             //storage->store_message(mes);
-            sequence_number = mes.get_sequence_number();
+            sequence_number = msg_sequence_number;
 
             //g_mutex.lock();
             //std::cout << "SUBSCRIBER: MESSAGES SIZE -> " << messages.size() << '\n';

@@ -1,5 +1,6 @@
 package messaging.core;
 
+import messaging.core.config.Configuration;
 import messaging.core.messagetemplates.Message;
 import messaging.core.messagetemplates.MessageType;
 import messaging.core.persistence.PersistentStorage;
@@ -14,13 +15,15 @@ public class Main {
 
     public static void main(String[] args) {
 
+        Configuration.setLibMessagingCorePath("/home/andrey/Development/Projects/Ammer/messaging-core/core/java/");
+
         PersistentStorage storage = new PostgreSqlPersistentStorage("postgres", "postgres", "127.0.0.1", "5432");
-        Publisher publisher = new Publisher(storage, "tcp://*:2033", "tcp://*:5553");
+        //Publisher publisher = new Publisher(storage, "tcp://*:4533", "tcp://*:9928");
 
-        Subscriber subscriber = new Subscriber("TEST", "tcp://localhost:2033", "tcp://localhost:5553");
+        Subscriber subscriber = new Subscriber("TEST", "tcp://localhost:4533", "tcp://localhost:9928");
 
-        Sender sender = new Sender(publisher);
-        sender.start();
+        //Sender sender = new Sender(publisher);
+        //sender.start();
 
         Poller poller = new Poller(subscriber);
         poller.start();
@@ -29,6 +32,7 @@ public class Main {
 
 }
 
+// Just for test
 class Sender extends Thread {
 
     private Publisher publisher;
@@ -42,7 +46,7 @@ class Sender extends Thread {
         System.out.println("Sender is starting...");
 
         int seqNum = 0;
-        while (seqNum < 10){
+        while (true){
 
             try {
                 Message message = new Message(
@@ -68,6 +72,7 @@ class Sender extends Thread {
     }
 }
 
+// Just for test
 class Poller extends Thread{
 
     private Subscriber subscriber;
@@ -83,7 +88,7 @@ class Poller extends Thread{
         Optional<Message> messageOptional = Optional.empty();
 
         int i = 0;
-        while (i < 10){
+        while (true){
             i++;
 
             messageOptional = subscriber.pollMessage();

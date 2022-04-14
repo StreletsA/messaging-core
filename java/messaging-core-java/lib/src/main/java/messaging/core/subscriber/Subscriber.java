@@ -37,7 +37,15 @@ public class Subscriber {
     }
 
     public String poll(){
-        return subscriber.poll(nativeObjectPointer);
+        String ans = "";
+
+        try{
+            ans = subscriber.poll(nativeObjectPointer);
+        }catch (NullPointerException e){
+            System.out.println("JAVA: SUBSCRIBER: POLL -> subscriber is null!");
+        }
+
+        return ans;
     }
     public Optional<Message> pollMessage(){
 
