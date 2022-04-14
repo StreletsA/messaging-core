@@ -91,27 +91,29 @@ void Publisher::pub_thread_fn()
 
         while(!incoming_message_queue.empty())
         {
-
+            
             // Get message from queue
-            Message mes = incoming_message_queue.front();
+            Message msg = incoming_message_queue.front();
             incoming_message_queue.pop();
             sequence_number++;
 
             if(persistent_storage_interface != nullptr)
             {
-                mes.set_sequence_number(persistent_storage_interface->get_sequence_number() + 1);
-                persistent_storage_interface->store_message(mes);
+                // Setting sequence number from storage
+                msg.set_sequence_number(persistent_storage_interface->get_sequence_number() + 1);
+                persistent_storage_interface->store_message(msg);
             }
             else
             {
-                mes.set_sequence_number(sequence_number);
+                // Setting sequence number from our publisher seq num
+                msg.set_sequence_number(sequence_number);
             }
 
-            std::cout << "PUBLISHER: MSG SEQ_NUM -> " << mes.get_sequence_number() << '\n';
+            std::cout << "PUBLISHER: MSG SEQ_NUM -> " << msg.get_sequence_number() << '\n';
 
             // Create string data for sending: TOPIC + DATA
-            std::string topic = mes.get_topic();
-            std::string str_data = topic + mes.Serialize();
+            std::string topic = msg.get_topic();
+            std::string str_data = topic + msg.Serialize();
 
             // Create message from string data
             zmq::message_t message(str_data.size());
@@ -120,7 +122,8 @@ void Publisher::pub_thread_fn()
             // Send message
             pub_socket->send (message);
 
-            //std::cout << "SENT: " << str_data << '\n';
+            // HACK: publishing interval for java subscriber
+            std::this_thread::sleep_for (std::chrono::microseconds(250000));
             
         }
 

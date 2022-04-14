@@ -32,9 +32,11 @@ private:
     zmq::context_t *ctx;
     zmq::socket_t *sub_socket;
     zmq::socket_t *req_socket;
+
     std::string topic;
     std::queue<Message> messages;
     std::thread *sub_thread;
+    
     PersistentStorageInterface *storage;
 
     std::mutex g_mutex;

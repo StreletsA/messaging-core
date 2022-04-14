@@ -19,8 +19,6 @@ void add_messages(Publisher *publisher)
 	while(true)
 	{
 
-		std::this_thread::sleep_for (std::chrono::microseconds(250000));
-
 		i++;
 
 		Message mes;
