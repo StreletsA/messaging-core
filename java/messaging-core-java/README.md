@@ -20,3 +20,11 @@ javac -h . YourClass.java
 ./lib_builder.sh
 ```
 If you added a new class you should to castomize [lib_builder.sh](../../core/java/lib_builder.sh)
+
+### Build
+Just run command:
+```text
+./gradlew shadowJar
+```
+
+This command builds a fat jar in lib/build/libs
