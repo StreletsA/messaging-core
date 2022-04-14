@@ -9,6 +9,7 @@
 plugins {
     // Apply the java-library plugin for API and implementation separation.
     id 'java-library'
+    id("com.github.johnrengelman.shadow") version "7.0.0"
 }
 
 repositories {
@@ -40,4 +41,10 @@ dependencies {
 tasks.named('test') {
     // Use JUnit Platform for unit tests.
     useJUnitPlatform()
+}
+
+shadowJar {
+    manifest {
+        attributes 'Main-Class': 'messaging.core.Main'
+    }
 }
