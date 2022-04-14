@@ -18,12 +18,12 @@ public class Main {
         Configuration.setLibMessagingCorePath("/home/andrey/Development/Projects/Ammer/messaging-core/core/java/");
 
         PersistentStorage storage = new PostgreSqlPersistentStorage("postgres", "postgres", "127.0.0.1", "5432");
-        //Publisher publisher = new Publisher(storage, "tcp://*:4533", "tcp://*:9928");
+        Publisher publisher = new Publisher(storage, "tcp://*:4533", "tcp://*:9928");
 
         Subscriber subscriber = new Subscriber("TEST", "tcp://localhost:4533", "tcp://localhost:9928");
 
-        //Sender sender = new Sender(publisher);
-        //sender.start();
+        Sender sender = new Sender(publisher);
+        sender.start();
 
         Poller poller = new Poller(subscriber);
         poller.start();
@@ -63,7 +63,7 @@ class Sender extends Thread {
 
                 publisher.publish(json);
 
-                System.out.println("JAVA: SENDER: PUBLISHED JSON -> " + json);
+                //System.out.println("JAVA: SENDER: PUBLISHED JSON -> " + json);
             }catch (Exception e){
                 e.printStackTrace();
             }

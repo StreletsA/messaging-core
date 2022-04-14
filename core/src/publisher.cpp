@@ -123,7 +123,7 @@ void Publisher::pub_thread_fn()
             pub_socket->send (message);
 
             // HACK: publishing interval for java subscriber
-            std::this_thread::sleep_for (std::chrono::microseconds(250000));
+            std::this_thread::sleep_for (std::chrono::microseconds(500000));
             
         }
 
