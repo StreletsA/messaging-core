@@ -54,9 +54,13 @@ std::string Subscriber::poll()
 void Subscriber::startup()
 {
 
+    std::cout << "SUBSCRIBER: STARTUP TSK STARTED!" << '\n';
+
     // Synchronization
     // We couldn't worry about this, because server understand what we want
     do_recovery(sequence_number, 0);
+
+    std::cout << "SUBSCRIBER: STARTUP TSK FINISHED!" << '\n';
 
 }
 
@@ -122,7 +126,6 @@ void Subscriber::do_recovery(long startseqnum, long endseqnum)
         {
             sequence_number = msg.get_sequence_number();
             messages.push(msg);
-            //storage->store_message(msg);
         }
     }
     std::cout << "SUBSCRIBER: MESSAGES SIZE: " << messages.size() << '\n';
@@ -170,12 +173,7 @@ void Subscriber::thread_fn()
 
             // Add message into messages queue
             messages.push(msg);
-            //storage->store_message(mes);
             sequence_number = msg_sequence_number;
-
-            //g_mutex.lock();
-            //std::cout << "SUBSCRIBER: MESSAGES SIZE -> " << messages.size() << '\n';
-            //g_mutex.unlock();
         }
 
 	}
