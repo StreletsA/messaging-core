@@ -27,4 +27,4 @@ Just run command:
 ./gradlew shadowJar
 ```
 
-This command builds a fat jar in lib/build/libs
+This command builds a fat jar in lib/build/libs: <b>lib-all.jar</b>
