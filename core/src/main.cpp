@@ -97,16 +97,16 @@ int main(int argc, char *argv[])
 	if (&tps == nullptr) std::cout << "NULL!" << '\n';
 
 	Publisher publisher(ctx, addr_pub, addr_rep, tps);
-	//Subscriber subscriber(ctx, &tsps, "TEST", addr_sub, addr_req);
+	Subscriber subscriber(ctx, &tsps, "TEST", addr_sub, addr_req);
 
 	std::thread appender(add_messages, &publisher);
-	//std::thread poller(poll_message, &subscriber);
+	std::thread poller(poll_message, &subscriber);
 	
 	publisher.join();
-	//subscriber.join();
+	subscriber.join();
 	tps->join();
 	tsps.join();
 	appender.join();
-	//poller.join();
+	poller.join();
 
 }
