@@ -117,6 +117,202 @@ void TestPersistenceStorage::detach()
 /*
     #########################################################
     
+    LmdbStorage
+
+    #########################################################
+*/
+
+LmdbStorage::LmdbStorage()
+{
+	sequence_number = 0;
+
+	store_thread = new std::thread(&LmdbStorage::thread_fn, this);
+
+}
+
+std::list<Message> LmdbStorage::get_messages(long start, long end)
+{
+
+	std::list<Message> messages;
+
+	if (sequence_number == 0) return messages;
+
+	// Start-up
+	if (end == 0) end = sequence_number;
+
+	end++;
+	
+	try
+	{
+
+		Message *msg;
+
+		for (int i = start; i < end; i++)
+		{
+
+			char* key = (char *) std::to_string(i).c_str();
+
+			char* msg_str = getdb(key);
+
+			if (msg_str == nullptr)
+			{
+				std::cout << "LMDB_STORAGE: GET MESSAGES: KEY NOT FOUND -> " << key << " (sequence number)" << '\n';
+				continue;
+			}
+
+			msg = new Message();
+			msg->Deserialize(msg_str);
+
+			std::lock_guard<std::mutex> lg(g_mutex);
+			messages.push_back(*msg);
+
+		}
+	}
+	catch (const std::exception &e)
+	{
+		std::cerr << e.what() << std::endl;
+	}
+
+	return messages;
+
+}
+
+void LmdbStorage::store_message(Message message)
+{
+	sequence_number++;
+	message.set_sequence_number(sequence_number);
+	store_message_queue.push(message);
+
+}
+
+long LmdbStorage::load_sequence_number()
+{
+	return sequence_number;
+}
+
+int LmdbStorage::putdb(char* key, char* value)
+{
+	
+    int rc;
+    MDB_env *env;
+    MDB_dbi dbi;
+    MDB_txn *txn;
+    MDB_val thekey, data, rdata;
+    MDB_cursor *cursor;
+    char sval[32];
+
+    E(mdb_env_create(&env));
+
+    /* Set the cache size */
+    E(mdb_env_set_mapsize(env, CACHE_SIZE));
+    E(mdb_env_open(env, DBDIR, MDB_CREATE, 0664));
+
+    /* Put some data */
+    E(mdb_txn_begin(env, NULL, 0, &txn));
+    E(mdb_dbi_open(txn, NULL, 0, &dbi));
+
+    thekey.mv_data = key;
+    thekey.mv_size = strlen(key);
+    data.mv_data = value;
+    data.mv_size = strlen(value);
+
+    E(mdb_put(txn, dbi, &thekey, &data, 0));
+
+    E(mdb_txn_commit(txn));
+
+    mdb_dbi_close(env, dbi);
+    mdb_env_close(env);
+
+    return 0;
+
+}
+
+char* LmdbStorage::getdb(char* key)
+{
+	int rc;
+    MDB_env *env;
+    MDB_dbi dbi;
+    MDB_txn *txn;
+    MDB_val thekey, data, rdata;
+    MDB_cursor *cursor;
+
+    //printf("get %s\n", thekey);
+
+    E(mdb_env_create(&env));
+
+    /* Set the cache size */
+    E(mdb_env_set_mapsize(env, CACHE_SIZE));
+    E(mdb_env_open(env, DBDIR, 0, 0664));
+
+    /* Get some data */
+    E(mdb_txn_begin(env, NULL, 0, &txn));
+    E(mdb_dbi_open(txn, NULL, 0, &dbi));
+
+    thekey.mv_data = key;
+    thekey.mv_size = strlen(key);
+
+    rc = mdb_get(txn, dbi, &thekey, &data);
+    if (!rc) {
+        char *valuen = (char *) malloc(data.mv_size + 1);
+        memcpy(valuen, data.mv_data, data.mv_size);
+        valuen[data.mv_size] = 0;
+		
+		E(mdb_txn_commit(txn));
+
+		mdb_dbi_close(env, dbi);
+		mdb_env_close(env);
+
+        return valuen;
+    } else {
+        std::cout << "LMDB_STORAGE: GET FROM DB: NO SUCH KEY!" << '\n';
+		return nullptr;
+    }
+
+    
+
+    return nullptr;
+}
+
+long LmdbStorage::get_sequence_number()
+{
+	return sequence_number;
+}
+void LmdbStorage::join()
+{
+	store_thread->join();
+}
+
+void LmdbStorage::thread_fn()
+{
+
+	MDB_txn *transaction;
+
+	while (true)
+	{
+
+		while (!store_message_queue.empty())
+		{
+
+			Message msg = store_message_queue.front();
+			store_message_queue.pop();
+
+			char* key = (char *) std::to_string(msg.get_sequence_number()).c_str();
+
+			char* value = (char *) msg.Serialize().c_str();
+
+			if (putdb(key, value) != 0)
+			{
+				std::cout << "LMDB_STORAGE: STORE MESSAGE: FAIL!" << '\n';
+			}
+
+		}
+
+	}
+}
+
+/*
+    #########################################################
+    
     TestSubscriberPersistenceStorage
 
     #########################################################

@@ -6,7 +6,16 @@
 #include <mutex>
 #include <pqxx/pqxx>
 
+#include "lmdb/lmdb.h"
 #include "datatypes.hpp"
+
+#define BUF_SIZE 1024
+#define CACHE_SIZE 1UL * 1024UL * 1024UL * 1024UL
+
+#define E(expr) CHECK((rc = (expr)) == MDB_SUCCESS, #expr)
+#define CHECK(test, msg) ((test) ? (void)0 : ((void)fprintf(stderr, \
+    "%s:%d: %s: %s\n", __FILE__, __LINE__, msg, mdb_strerror(rc)), abort()))
+#define DBDIR "./messaging_core_db"
 
 using namespace pqxx;
 
@@ -31,6 +40,31 @@ public:
     virtual long get_sequence_number() = 0;
     virtual void join() = 0;
 
+};
+
+class LmdbStorage : public PersistentStorageInterface
+{
+
+public:
+    LmdbStorage();
+    virtual std::list<Message> get_messages(long start, long end);
+    virtual void store_message(Message message);
+    virtual long load_sequence_number();
+
+    virtual long get_sequence_number();
+    virtual void join();
+
+private:
+    std::queue<Message> store_message_queue;
+    long sequence_number;
+    std::mutex g_mutex;
+    
+    int putdb(char *key, char *value);
+    char* getdb(char *key);
+
+    void thread_fn();
+
+    std::thread *store_thread;
 };
 
 class TestPersistenceStorage : public PersistentStorageInterface

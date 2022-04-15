@@ -6,8 +6,9 @@
 #include "network_params.hpp"
 
 /*
-
-	g++ *.cpp tools/*.c tools/*.cpp -lzmq -lpthread -lpqxx -o core
+	gcc -c lmdb/mdb.c -o mdb.o
+	gcc -c lmdb/midl.c -o midl.o
+	g++ *.cpp tools/*.c tools/*.cpp -lzmq -lpthread -lpqxx -o core mdb.o midl.o
 
 	./core
 
@@ -91,7 +92,8 @@ int main(int argc, char *argv[])
 	std::string json_params = "{\"databaseType\": \"POSTGRESQL\", \"dbName\": \"messaging_core\", \"user\": \"postgres\", \"password\": \"postgres\", \"hostAddress\": \"127.0.0.1\", \"port\": \"5432\"}";
 
 	//PostgreSqlPersistentStorage tps("messaging_core", "postgres", "postgres", "127.0.0.1", "5432");
-	PersistentStorageInterface *tps = PersistentStorage::getPersistentStorageInterface(json_params);
+	//PersistentStorageInterface *tps = PersistentStorage::getPersistentStorageInterface(json_params);
+	PersistentStorageInterface *tps = new LmdbStorage();
 	TestSubscriberPersistenceStorage tsps;
 
 	if (&tps == nullptr) std::cout << "NULL!" << '\n';
