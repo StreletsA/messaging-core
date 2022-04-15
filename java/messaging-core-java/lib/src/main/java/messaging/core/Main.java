@@ -23,10 +23,10 @@ public class Main {
         Subscriber subscriber = new Subscriber("TEST", "tcp://localhost:4533", "tcp://localhost:9928");
 
         Sender sender = new Sender(publisher);
-        sender.start();
+        //sender.start();
 
         Poller poller = new Poller(subscriber);
-        poller.start();
+        //poller.start();
 
     }
 

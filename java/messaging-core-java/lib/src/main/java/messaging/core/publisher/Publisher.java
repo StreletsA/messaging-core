@@ -1,9 +1,11 @@
 package messaging.core.publisher;
 
+import lombok.extern.slf4j.Slf4j;
 import messaging.core.messagetemplates.Message;
 import messaging.core.messagetemplates.MessageType;
 import messaging.core.persistence.PersistentStorage;
 
+@Slf4j
 public class Publisher {
 
     private NativePublisher publisher;
@@ -16,9 +18,11 @@ public class Publisher {
         this.pubConnectionAddress = pubConnectionAddress;
         this.repConnectionAddress = repConnectionAddress;
 
+        log.info("Publisher creating...");
         Thread pubCreator = new Thread(() -> {
             publisher = new NativePublisher(storage.serialize(), pubConnectionAddress, repConnectionAddress);
             nativeObjectPointer = publisher.getNativeObjectPointer();
+            log.info("Publisher created!");
         });
 
         pubCreator.start();

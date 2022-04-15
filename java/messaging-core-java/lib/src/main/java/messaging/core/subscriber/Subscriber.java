@@ -1,9 +1,11 @@
 package messaging.core.subscriber;
 
+import lombok.extern.slf4j.Slf4j;
 import messaging.core.messagetemplates.Message;
 
 import java.util.Optional;
 
+@Slf4j
 public class Subscriber {
 
     private final String topic;
@@ -19,6 +21,7 @@ public class Subscriber {
         this.subConnectionAddress = subConnectionAddress;
         this.reqConnectionAddress = reqConnectionAddress;
 
+        log.info("Subscriber creating...");
         Thread subCreator = new Thread(() -> {
 
             subscriber = new NativeSubscriber(topic, subConnectionAddress, reqConnectionAddress);
@@ -33,6 +36,7 @@ public class Subscriber {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        log.info("Subscriber created!");
 
     }
 
@@ -42,7 +46,7 @@ public class Subscriber {
         try{
             ans = subscriber.poll(nativeObjectPointer);
         }catch (NullPointerException e){
-            System.out.println("JAVA: SUBSCRIBER: POLL -> subscriber is null!");
+            log.error("Subscriber is null!");
         }
 
         return ans;
@@ -57,6 +61,7 @@ public class Subscriber {
                 messageOptional = Optional.of(new Message(json));
             }
         }catch (IllegalStateException e){
+            log.error("Json is illegal!");
             e.printStackTrace();
             messageOptional = Optional.empty();
         }
