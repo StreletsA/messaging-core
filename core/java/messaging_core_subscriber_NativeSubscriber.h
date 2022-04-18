@@ -10,10 +10,10 @@ extern "C" {
 /*
  * Class:     messaging_core_subscriber_NativeSubscriber
  * Method:    nativeNew
- * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)J
+ * Signature: (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)J
  */
 JNIEXPORT jlong JNICALL Java_messaging_core_subscriber_NativeSubscriber_nativeNew
-  (JNIEnv *, jobject, jstring, jstring, jstring);
+  (JNIEnv *, jobject, jstring, jstring, jstring, jstring);
 
 /*
  * Class:     messaging_core_subscriber_NativeSubscriber

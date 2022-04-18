@@ -13,14 +13,14 @@ JNIEXPORT jlong JNICALL Java_messaging_core_publisher_NativePublisher_nativeNew
   {
     zmq::context_t *ctx = Context::getInstance().get_context();
     
-    //std::string arg_json_params = jstring2string(env, json_params);
-    std::string arg_json_params = "{\"databaseType\": \"POSTGRESQL\", \"dbName\": \"messaging_core\", \"user\": \"postgres\", \"password\": \"postgres\", \"hostAddress\": \"127.0.0.1\", \"port\": \"5432\"}";
+    std::string arg_json_params = jstring2string(env, json_params);
+    //std::string arg_json_params = "{\"databaseType\": \"POSTGRESQL\", \"dbName\": \"messaging_core\", \"user\": \"postgres\", \"password\": \"postgres\", \"hostAddress\": \"127.0.0.1\", \"port\": \"5432\"}";
 
     std::string arg_pub = jstring2string(env, pub_addr);
     std::string arg_rep = jstring2string(env, rep_addr);
     
     //std::cout << "JNI PUBLISHER: JSON_PARAMS -> " << arg_json_params << '\n';
-	  PersistentStorageInterface *tps = PersistentStorage::getPersistentStorageInterface(arg_json_params);
+	 PersistentStorageInterface *tps = PersistentStorage::getPersistentStorageInterface(arg_json_params);
     //TestPersistenceStorage *tps = new TestPersistenceStorage();
     Publisher *publisher = new Publisher(ctx, arg_pub.c_str(), arg_rep.c_str(), tps);
 
@@ -28,10 +28,10 @@ JNIEXPORT jlong JNICALL Java_messaging_core_publisher_NativePublisher_nativeNew
   }
 
 JNIEXPORT void JNICALL Java_messaging_core_publisher_NativePublisher_publish
-  (JNIEnv *env, jobject obj, jlong pointer, jlong seq_num, jstring uuid, jstring topic, jlong timestamp, jstring msg_type, jboolean needs_reply, jstring data_json)
+  (JNIEnv *env, jobject obj, jlong pointer, jstring topic, jstring uuid, jlong seq_num, jlong timestamp, jstring body)
   {
   	Publisher *publisher = (Publisher*) pointer;
-  	Message *msg = new Message(seq_num, jstring2string(env, uuid), jstring2string(env, topic), timestamp, MessageType::INFO, needs_reply, jstring2string(env, data_json));
+  	Message *msg = new Message(jstring2string(env, topic), jstring2string(env, uuid), seq_num, timestamp, jstring2string(env, body));
   	publisher->publish(*msg);
   }
 
@@ -40,8 +40,6 @@ JNIEXPORT void JNICALL Java_messaging_core_publisher_NativePublisher_publishByJs
   {
 
     Publisher *publisher = (Publisher*) pointer;
-  	//Message *msg = new Message();
-  	//msg->Deserialize(jstring2string(env, json));
   	publisher->publish(jstring2string(env, json));
 
   }

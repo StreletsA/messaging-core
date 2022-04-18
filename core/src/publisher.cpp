@@ -113,15 +113,16 @@ void Publisher::pub_thread_fn()
 
             // Create string data for sending: TOPIC + DATA
             std::string topic = msg.get_topic();
-            std::string str_data = topic + msg.Serialize();
-
-            std::cout << "PUBLISHER: STR_DATA -> " << str_data << '\n';
+            std::string str_msg = msg.Serialize();
 
             // Create message from string data
-            zmq::message_t message(str_data.size());
-            memcpy (message.data(), str_data.data(), str_data.size());
+            zmq::message_t message_topic(topic.size());
+            zmq::message_t message(str_msg.size());
+            memcpy (message_topic.data(), topic.data(), topic.size());
+            memcpy (message.data(), str_msg.data(), str_msg.size());
 
             // Send message
+            pub_socket->send (message_topic, zmq::send_flags::sndmore);
             pub_socket->send (message);
 
             // HACK: publishing interval for java subscriber

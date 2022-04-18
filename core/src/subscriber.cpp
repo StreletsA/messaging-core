@@ -140,16 +140,20 @@ void Subscriber::thread_fn()
 	{
         
         // Create a received zmq message
+        zmq::message_t message_topic;
         zmq::message_t message;
 
         // Receive the zmq message
+        sub_socket->recv(&message_topic);
         sub_socket->recv(&message);
 
         // Get string data from zmq message
+        std::string topic = std::string(static_cast<char*>(message_topic.data()), message_topic.size());
         std::string data = std::string(static_cast<char*>(message.data()), message.size());
-
+        std::cout << "SUBSCRIBER: RECV TOPIC -> " << topic << '\n';
         // Delete topic name from string data and get json
-        std::string message_json = data.substr(topic.size());
+        //std::string message_json = data.substr(topic.size());
+        std::string message_json = data;
 
         // Get message from json. Message data is still json format.
         if (message_json.size() > 0)

@@ -12,13 +12,11 @@ import lombok.*;
 @EqualsAndHashCode
 public class Message {
 
-    private String uuid;
     private String topic;
+    private String uuid;
     private long sequence_number;
     private long timestamp;
-    private boolean needs_reply;
-    private MessageType message_type;
-    private String data_json;
+    private String body;
 
     public Message(String json) throws IllegalStateException{
         if (!deserialize(json)){
@@ -47,9 +45,7 @@ public class Message {
             topic = msg.getTopic();
             sequence_number = msg.getSequence_number();
             timestamp = msg.getTimestamp();
-            needs_reply = msg.isNeeds_reply();
-            message_type = msg.getMessage_type();
-            data_json = msg.getData_json();
+            body = msg.getBody();
 
         } catch (JsonProcessingException e) {
             e.printStackTrace();

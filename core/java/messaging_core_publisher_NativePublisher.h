@@ -17,19 +17,11 @@ JNIEXPORT jlong JNICALL Java_messaging_core_publisher_NativePublisher_nativeNew
 
 /*
  * Class:     messaging_core_publisher_NativePublisher
- * Method:    join
- * Signature: (J)V
- */
-JNIEXPORT void JNICALL Java_messaging_core_publisher_NativePublisher_join
-  (JNIEnv *, jobject, jlong);
-
-/*
- * Class:     messaging_core_publisher_NativePublisher
  * Method:    publish
- * Signature: (JJLjava/lang/String;Ljava/lang/String;JLjava/lang/String;ZLjava/lang/String;)V
+ * Signature: (JLjava/lang/String;Ljava/lang/String;JJLjava/lang/String;)V
  */
 JNIEXPORT void JNICALL Java_messaging_core_publisher_NativePublisher_publish
-  (JNIEnv *, jobject, jlong, jlong, jstring, jstring, jlong, jstring, jboolean, jstring);
+  (JNIEnv *, jobject, jlong, jstring, jstring, jlong, jlong, jstring);
 
 /*
  * Class:     messaging_core_publisher_NativePublisher

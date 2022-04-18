@@ -25,7 +25,7 @@ public class NativePublisher {
         return nativeObjectPointer;
     }
 
-    public native void publish(long nativeObjectPointer, long sequenceNumber, String uuid, String topic, long timestamp, String messageType, boolean needsReply, String dataJson);
+    public native void publish(long nativeObjectPointer, String topic, String uuid, long sequenceNumber, long timestamp, String body);
     public native void publishByJson(long nativeObjectPointer, String jsonMessage);
 
 }

@@ -2,6 +2,7 @@ package messaging.core.subscriber;
 
 import lombok.extern.slf4j.Slf4j;
 import messaging.core.messagetemplates.Message;
+import messaging.core.persistence.PersistentStorage;
 
 import java.util.Optional;
 
@@ -15,7 +16,7 @@ public class Subscriber {
     private NativeSubscriber subscriber;
     private long nativeObjectPointer;
 
-    public Subscriber(String topic, String subConnectionAddress, String reqConnectionAddress) {
+    public Subscriber(PersistentStorage storage, String topic, String subConnectionAddress, String reqConnectionAddress) {
 
         this.topic = topic;
         this.subConnectionAddress = subConnectionAddress;
@@ -24,7 +25,7 @@ public class Subscriber {
         log.info("Subscriber creating...");
         Thread subCreator = new Thread(() -> {
 
-            subscriber = new NativeSubscriber(topic, subConnectionAddress, reqConnectionAddress);
+            subscriber = new NativeSubscriber(storage.serialize(), topic, subConnectionAddress, reqConnectionAddress);
             nativeObjectPointer = subscriber.getNativeObjectPointer();
 
         });

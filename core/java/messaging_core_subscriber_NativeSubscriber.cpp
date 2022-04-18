@@ -11,10 +11,13 @@ using namespace std;
 
 
 JNIEXPORT jlong JNICALL Java_messaging_core_subscriber_NativeSubscriber_nativeNew
-  (JNIEnv *env, jobject obj, jstring topic, jstring sub_connection_address, jstring req_connection_address)
+  (JNIEnv *env, jobject obj, jstring storage_json_params, jstring topic, jstring sub_connection_address, jstring req_connection_address)
   {
       zmq::context_t *ctx = Context::getInstance().get_context();
-      TestSubscriberPersistenceStorage *tsps = new TestSubscriberPersistenceStorage();
+      
+      std::string arg_json_params = jstring2string(env, storage_json_params);
+      //TestSubscriberPersistenceStorage *tsps = new TestSubscriberPersistenceStorage();
+      PersistentStorageInterface *tsps = PersistentStorage::getPersistentStorageInterface(arg_json_params);
 
       string arg_topic = jstring2string(env, topic);
       string arg_sub = jstring2string(env, sub_connection_address);
@@ -36,11 +39,3 @@ JNIEXPORT jstring JNICALL Java_messaging_core_subscriber_NativeSubscriber_poll
   	return env->NewStringUTF(message_json.c_str());
   }
 
-JNIEXPORT void JNICALL Java_messaging_core_subscriber_Subscriber_join
-  (JNIEnv *, jobject, jlong pointer)
-  {
-
-    Subscriber *subscriber = (Subscriber *) pointer;
-    subscriber->join();
-
-  }

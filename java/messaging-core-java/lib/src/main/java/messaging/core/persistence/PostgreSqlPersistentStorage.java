@@ -14,8 +14,8 @@ public class PostgreSqlPersistentStorage extends PersistentStorage{
     private String hostAddress;
     private String port;
 
-    public PostgreSqlPersistentStorage(String user, String password, String hostAddress, String port) {
-        super(DatabaseType.POSTGRESQL);
+    public PostgreSqlPersistentStorage(String user, String password, String hostAddress, String port, String dbName) {
+        super(DatabaseType.POSTGRESQL, dbName);
         this.user = user;
         this.password = password;
         this.hostAddress = hostAddress;
@@ -24,7 +24,7 @@ public class PostgreSqlPersistentStorage extends PersistentStorage{
     }
 
     public PostgreSqlPersistentStorage(String jsonParams){
-        super(DatabaseType.POSTGRESQL);
+        super(DatabaseType.POSTGRESQL, "");
 
         ObjectMapper mapper = new ObjectMapper();
 
@@ -32,6 +32,7 @@ public class PostgreSqlPersistentStorage extends PersistentStorage{
 
             PostgreSqlPersistentStorage storage = mapper.readValue(jsonParams, this.getClass());
 
+            setDbName(storage.getDbName());
             user = storage.getUser();
             password = storage.getPassword();
             hostAddress = storage.getHostAddress();

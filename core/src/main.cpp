@@ -63,8 +63,8 @@ int main(int argc, char *argv[])
 	std::string json_params = "{\"databaseType\": \"POSTGRESQL\", \"dbName\": \"messaging_core\", \"user\": \"postgres\", \"password\": \"postgres\", \"hostAddress\": \"127.0.0.1\", \"port\": \"5432\"}";
 
 	//PostgreSqlPersistentStorage tps("messaging_core", "postgres", "postgres", "127.0.0.1", "5432");
-	//PersistentStorageInterface *tps = PersistentStorage::getPersistentStorageInterface(json_params);
-	PersistentStorageInterface *tps = new LmdbStorage();
+	PersistentStorageInterface *tps = PersistentStorage::getPersistentStorageInterface(json_params);
+	//PersistentStorageInterface *tps = new LmdbStorage();
 	TestSubscriberPersistenceStorage tsps;
 
 	if (&tps == nullptr) std::cout << "NULL!" << '\n';

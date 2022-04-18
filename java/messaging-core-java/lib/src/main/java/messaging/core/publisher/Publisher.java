@@ -2,7 +2,6 @@ package messaging.core.publisher;
 
 import lombok.extern.slf4j.Slf4j;
 import messaging.core.messagetemplates.Message;
-import messaging.core.messagetemplates.MessageType;
 import messaging.core.persistence.PersistentStorage;
 
 @Slf4j
@@ -41,27 +40,23 @@ public class Publisher {
         return repConnectionAddress;
     }
 
-    public void publish(long sequenceNumber, String uuid, String topic, long timestamp, MessageType messageType, boolean needsReply, String dataJson){
+    public void publish(String topic, String uuid, long sequenceNumber, long timestamp, String body){
         publisher.publish(
                 nativeObjectPointer,
-                sequenceNumber,
-                uuid,
                 topic,
+                uuid,
+                sequenceNumber,
                 timestamp,
-                messageType.name(),
-                needsReply,
-                dataJson
+                body
         );
     }
     public void publish(Message message) {
         publish(
-                message.getSequence_number(),
-                message.getUuid(),
                 message.getTopic(),
+                message.getUuid(),
+                message.getSequence_number(),
                 message.getTimestamp(),
-                message.getMessage_type(),
-                message.isNeeds_reply(),
-                message.getData_json()
+                message.getBody()
         );
     }
     public void publish(String jsonMessage){

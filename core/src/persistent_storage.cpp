@@ -21,6 +21,11 @@ PersistentStorageInterface *PersistentStorage::getPersistentStorageInterface(std
 		persistentStorageInterface = new LmdbStorage();
 	}
 
+	if (strcmp(db_type, "NULL_DB") == 0)
+	{
+		persistentStorageInterface = new TestSubscriberPersistenceStorage();
+	}
+
 	return persistentStorageInterface;
 
 }
@@ -585,13 +590,11 @@ std::list<Message> PostgreSqlPersistentStorage::get_messages(long start, long en
 		for (result::const_iterator c = R.begin(); c != R.end(); ++c)
 		{
 
-			sequence_number = c[0].as<int>();
+			sequence_number = c[2].as<int>();
 			uuid = c[1].as<std::string>();
-			topic = c[2].as<std::string>();
+			topic = c[0].as<std::string>();
 			timestamp = c[3].as<int>();
-			message_type = MessageTypeConverter::fromString(c[4].as<std::string>());
-			needs_reply = c[5].as<bool>();
-			body = c[6].as<std::string>();
+			body = c[4].as<std::string>();
 
 			msg = new Message
 			(

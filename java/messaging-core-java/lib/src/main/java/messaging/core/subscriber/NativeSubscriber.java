@@ -15,11 +15,11 @@ public class NativeSubscriber {
         LibraryLoader.loadMessagingCoreLib();
     }
 
-    public NativeSubscriber(String topic, String subConnectionAddress, String reqConnectionAddress) {
-        nativeObjectPointer = nativeNew(topic, subConnectionAddress, reqConnectionAddress);
+    public NativeSubscriber(String persistentStorageJsonParams, String topic, String subConnectionAddress, String reqConnectionAddress) {
+        nativeObjectPointer = nativeNew(persistentStorageJsonParams, topic, subConnectionAddress, reqConnectionAddress);
     }
 
-    private native long nativeNew(String topic, String subConnectionAddress, String reqConnectionAddress);
+    private native long nativeNew(String persistentStorageJsonParams, String topic, String subConnectionAddress, String reqConnectionAddress);
 
     // return message as json
     public native String poll(long nativeObjectPointer);

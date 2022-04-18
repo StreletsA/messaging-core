@@ -10,7 +10,7 @@ import lombok.Setter;
 public abstract class PersistentStorage {
 
     private DatabaseType databaseType;
-    private final String dbName = "messaging_core";
+    private String dbName;
 
     public abstract String serialize();
 
