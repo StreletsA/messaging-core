@@ -154,7 +154,7 @@ std::list<Message> LmdbStorage::get_messages(long start, long end)
 		for (int i = start; i < end; i++)
 		{
 			std::string required_seq_num = std::to_string(i);
-			
+
 			char* key = (char *) required_seq_num.c_str();
 
 			char* msg_str = getdb(key);
@@ -523,28 +523,22 @@ std::string PostgreSqlPersistentStorage::create_insert_sql(Message message)
 	std::string uuid_str = message.get_uuid();
 	std::string topic_str = message.get_topic();
 	std::string timestamp_str = std::to_string(message.get_timestamp());
-	std::string message_type_str = MessageTypeConverter::toString(message.get_message_type());
-	std::string needs_reply_str = message.get_needs_reply() ? "true" : "false";
-	std::string data_json_str = message.get_data();
+	std::string body_json = message.get_body();
 
 	/*
-	std::string sql = "INSERT INTO messages (sequence_number, uuid, topic, timestamp, message_type, needs_reply, data_json) " \
+	std::string sql = "INSERT INTO messages (sequence_number, uuid, topic, timestamp, body) " \
 					"VALUES(" + sequence_number_str + ", " \
 					"'" + uuid_str + "', " \
 					"'" + topic_str + "', " \
 					"" + timestamp_str + ", " \
-					"'" + message_type_str + "', " \
-					"" + needs_reply_str + ", " \
-					"'" + data_json_str + "');";
+					"'" + body_json + "');";
 	*/
 
-	std::string sql = "INSERT INTO messages (uuid, topic, timestamp, message_type, needs_reply, data_json) " \
+	std::string sql = "INSERT INTO messages (uuid, topic, timestamp, body) " \
 					"VALUES('" + uuid_str + "', " \
 					"'" + topic_str + "', " \
 					"" + timestamp_str + ", " \
-					"'" + message_type_str + "', " \
-					"" + needs_reply_str + ", " \
-					"'" + data_json_str + "');";
+					"'" + body_json + "');";
 	
 	return sql;
 
@@ -586,7 +580,7 @@ std::list<Message> PostgreSqlPersistentStorage::get_messages(long start, long en
 		long timestamp;
 		MessageType message_type;
 		bool needs_reply;
-		std::string data_json;
+		std::string body;
 
 		for (result::const_iterator c = R.begin(); c != R.end(); ++c)
 		{
@@ -597,17 +591,15 @@ std::list<Message> PostgreSqlPersistentStorage::get_messages(long start, long en
 			timestamp = c[3].as<int>();
 			message_type = MessageTypeConverter::fromString(c[4].as<std::string>());
 			needs_reply = c[5].as<bool>();
-			data_json = c[6].as<std::string>();
+			body = c[6].as<std::string>();
 
 			msg = new Message
 			(
-				sequence_number,
-				uuid,
 				topic,
+				uuid,
+				sequence_number,
 				timestamp,
-				message_type,
-				needs_reply,
-				data_json
+				body
 			);
 
 			std::lock_guard<std::mutex> lg(g_mutex);

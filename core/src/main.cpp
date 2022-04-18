@@ -23,45 +23,16 @@ void add_messages(Publisher *publisher)
 		i++;
 
 		Message mes;
-		mes.set_message_type(MessageType::INFO);
-		mes.set_needs_reply(false);
 		//mes.set_sequence_number(i);
 		mes.set_timestamp(234241);
-		mes.set_topic("TEST");
+		mes.set_topic("TRANSACTION");
 		mes.set_uuid(generate_uuid_v4());
 		
-		StringData mes_str_data("Good job!!!");
+		std::string body = "{\"message\": \"Good job!!!\"}";
 
-		mes.set_data(mes_str_data.Serialize());
+		mes.set_body(body);
 
 		publisher->publish(mes);
-	}
-}
-
-void add_message(Publisher *publisher)
-{
-	int i = 0;
-	while(i < 20)
-	{
-		i++;
-
-		Message mes;
-		mes.set_message_type(MessageType::INFO);
-		mes.set_needs_reply(false);
-		mes.set_sequence_number(i);
-		mes.set_timestamp(234241);
-		mes.set_topic("TEST");
-		mes.set_uuid(generate_uuid_v4());
-		
-		StringData mes_str_data("Good job!!!");
-
-		mes.set_data(mes_str_data.Serialize());
-		//std::cout << "Mes str -> " << mes_str_data.Serialize() << '\n';
-		publisher->publish(mes.Serialize());
-
-		//std::cout << "TEST PUBLISHED! -> " << mes.Serialize() << '\n';
-
-		std::this_thread::sleep_for(std::chrono::microseconds(1000));
 	}
 }
 
@@ -99,7 +70,7 @@ int main(int argc, char *argv[])
 	if (&tps == nullptr) std::cout << "NULL!" << '\n';
 
 	Publisher publisher(ctx, addr_pub, addr_rep, tps);
-	Subscriber subscriber(ctx, &tsps, "TEST", addr_sub, addr_req);
+	Subscriber subscriber(ctx, &tsps, "TRANSACTION", addr_sub, addr_req);
 
 	std::thread appender(add_messages, &publisher);
 	std::thread poller(poll_message, &subscriber);

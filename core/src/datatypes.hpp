@@ -3,6 +3,7 @@
 #include <string>
 #include <iostream>
 #include <list>
+#include <ctime>
 
 #include "tools/cJSON.h"
 #include "tools/uuid.hpp"
@@ -25,6 +26,7 @@ enum MessageType
 
 class MessageTypeConverter
 {
+
 public:
     static MessageType fromString(std::string message_type)
     {
@@ -74,22 +76,18 @@ public:
     Message(std::string data_json);
     Message
     (
-        long sequence_number,
-        std::string uuid,
         std::string topic,
+        std::string uuid,
+        long sequence_number,
         long timestamp,
-        MessageType message_type,
-        bool needs_reply,
-        std::string data_json
+        std::string body
     );
     Message
     (
-        std::string uuid,
         std::string topic,
+        std::string uuid,
         long timestamp,
-        MessageType message_type,
-        bool needs_reply,
-        std::string data_json
+        std::string body
     );
 
     std::string Serialize();
@@ -105,44 +103,18 @@ public:
     long get_timestamp();
     void set_timestamp(long timestamp);
 
-    MessageType get_message_type();
-    void set_message_type(MessageType message_type);
-
     std::string get_uuid();
     void set_uuid(std::string uuid);
 
-    bool get_needs_reply();
-    void set_needs_reply(bool needs_reply);
-
-    std::string get_data();
-    void set_data(std::string data_json);
+    std::string get_body();
+    void set_body(std::string body);
 
 private:
-    long sequence_number;
-    std::string uuid;
     std::string topic;
+    std::string uuid;
+    long sequence_number;
     long timestamp;
-    MessageType message_type;
-    bool needs_reply;
-    std::string data_json;
-
-};
-
-class StringData
-{
-
-public:
-    StringData();
-    StringData(std::string str_data);
-
-    std::string Serialize();
-    bool Deserialize(std::string json_string);
-
-    std::string get_str_data();
-    void set_str_data(std::string str_data);
-
-private:
-    std::string str_data;
+    std::string body;
 
 };
 

@@ -115,6 +115,8 @@ void Publisher::pub_thread_fn()
             std::string topic = msg.get_topic();
             std::string str_data = topic + msg.Serialize();
 
+            std::cout << "PUBLISHER: STR_DATA -> " << str_data << '\n';
+
             // Create message from string data
             zmq::message_t message(str_data.size());
             memcpy (message.data(), str_data.data(), str_data.size());
