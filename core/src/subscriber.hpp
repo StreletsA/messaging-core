@@ -10,7 +10,6 @@
 #include "datatypes.hpp"
 #include "persistent_storage.hpp"
 
-
 class Subscriber;
 class SubscriberThread;
 
@@ -51,4 +50,3 @@ private:
     void do_recovery(long startseqnum, long endseqnum);
 
 };
-

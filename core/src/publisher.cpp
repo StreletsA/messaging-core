@@ -37,7 +37,7 @@ Publisher::Publisher(zmq::context_t *context, const char *pub_connection_address
 
     std::cout << "PUBLISHER: PUBLISHER CREATED! STARTING THREAD" << '\n';
     
-    sequence_number = persistent_storage_interface->load_sequence_number();
+    sequence_number = persistent_storage_interface->get_sequence_number();
 
     start();
 }
