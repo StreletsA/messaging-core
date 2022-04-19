@@ -13,14 +13,15 @@ public class PostgreSqlPersistentStorage extends PersistentStorage{
     private String password;
     private String hostAddress;
     private String port;
+    private String tableName;
 
-    public PostgreSqlPersistentStorage(String user, String password, String hostAddress, String port, String dbName) {
+    public PostgreSqlPersistentStorage(String user, String password, String hostAddress, String port, String dbName, String tableName) {
         super(DatabaseType.POSTGRESQL, dbName);
         this.user = user;
         this.password = password;
         this.hostAddress = hostAddress;
         this.port = port;
-
+        this.tableName = tableName;
     }
 
     public PostgreSqlPersistentStorage(String jsonParams){
@@ -37,6 +38,7 @@ public class PostgreSqlPersistentStorage extends PersistentStorage{
             password = storage.getPassword();
             hostAddress = storage.getHostAddress();
             port = storage.getPort();
+            tableName = storage.getTableName();
 
         } catch (JsonProcessingException e) {
             e.printStackTrace();
@@ -53,7 +55,8 @@ public class PostgreSqlPersistentStorage extends PersistentStorage{
                 "\"user\": \"" + user + "\", " +
                 "\"password\": \"" + password + "\", " +
                 "\"hostAddress\": \"" + hostAddress + "\", " +
-                "\"port\": \"" + port + "\"" +
+                "\"port\": \"" + port + "\", " +
+                "\"tableName\": \"" + tableName + "\"" +
                 "}";
 
     }

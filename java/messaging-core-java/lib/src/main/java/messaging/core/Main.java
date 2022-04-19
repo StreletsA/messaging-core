@@ -2,7 +2,6 @@ package messaging.core;
 
 import messaging.core.config.Configuration;
 import messaging.core.messagetemplates.Message;
-import messaging.core.persistence.LmdbPersistentStorage;
 import messaging.core.persistence.NullDbPersistentStorage;
 import messaging.core.persistence.PersistentStorage;
 import messaging.core.persistence.PostgreSqlPersistentStorage;
@@ -18,7 +17,7 @@ public class Main {
 
         Configuration.setLibMessagingCorePath("/home/andrey/Development/Projects/Ammer/messaging-core/core/java/");
 
-        PersistentStorage storage = new PostgreSqlPersistentStorage("postgres", "postgres", "127.0.0.1", "5432", "messaging_core");
+        PersistentStorage storage = new PostgreSqlPersistentStorage("postgres", "postgres", "127.0.0.1", "5432", "messaging_core", "messages");
         Publisher publisher = new Publisher(storage, "tcp://*:4533", "tcp://*:9928");
 
         PersistentStorage subStorage = new NullDbPersistentStorage();
