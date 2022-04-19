@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
 	const char *addr_sub = "tcp://localhost:4533";
 	const char *addr_req = "tcp://localhost:9928";
 
-	std::string json_params = "{\"databaseType\": \"POSTGRESQL\", \"dbName\": \"messaging_core\", \"user\": \"postgres\", \"password\": \"postgres\", \"hostAddress\": \"127.0.0.1\", \"port\": \"5432\"}";
+	std::string json_params = "{\"databaseType\": \"POSTGRESQL\", \"dbName\": \"messaging_core\", \"user\": \"postgres\", \"password\": \"postgres\", \"hostAddress\": \"127.0.0.1\", \"port\": \"5432\", \"tableName\": \"messages\"}";
 
 	//PostgreSqlPersistentStorage tps("messaging_core", "postgres", "postgres", "127.0.0.1", "5432");
 	PersistentStorageInterface *tps = PersistentStorage::getPersistentStorageInterface(json_params);

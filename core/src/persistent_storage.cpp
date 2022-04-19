@@ -444,9 +444,11 @@ PostgreSqlPersistentStorage::PostgreSqlPersistentStorage
     std::string user,
     std::string password,
     std::string hostaddr,
-    std::string port
+    std::string port,
+	std::string table_name
 )
 {
+	this->table_name = table_name;
 
 	connect(dbname, user, password, hostaddr, port);
 
@@ -464,6 +466,8 @@ PostgreSqlPersistentStorage::PostgreSqlPersistentStorage(std::string json_params
 	std::string password = cJSON_GetObjectItemCaseSensitive(json, "password")->valuestring;
 	std::string hostaddr = cJSON_GetObjectItemCaseSensitive(json, "hostAddress")->valuestring;
 	std::string port = cJSON_GetObjectItemCaseSensitive(json, "port")->valuestring;
+	
+	table_name = cJSON_GetObjectItemCaseSensitive(json, "tableName")->valuestring;
 
 	connect(dbname, user, password, hostaddr, port);
 }
@@ -531,7 +535,7 @@ std::string PostgreSqlPersistentStorage::create_insert_sql(Message message)
 	std::string body_json = message.get_body();
 
 	/*
-	std::string sql = "INSERT INTO messages (sequence_number, uuid, topic, timestamp, body) " \
+	std::string sql = "INSERT INTO " + table_name + " (sequence_number, uuid, topic, timestamp, body) " \
 					"VALUES(" + sequence_number_str + ", " \
 					"'" + uuid_str + "', " \
 					"'" + topic_str + "', " \
@@ -539,7 +543,7 @@ std::string PostgreSqlPersistentStorage::create_insert_sql(Message message)
 					"'" + body_json + "');";
 	*/
 
-	std::string sql = "INSERT INTO messages (uuid, topic, timestamp, body) " \
+	std::string sql = "INSERT INTO " + table_name + "(uuid, topic, timestamp, body) " \
 					"VALUES('" + uuid_str + "', " \
 					"'" + topic_str + "', " \
 					"" + timestamp_str + ", " \
@@ -554,7 +558,7 @@ std::string PostgreSqlPersistentStorage::create_select_sql(long start, long end)
 	std::string start_str = std::to_string(start);
 	std::string end_str = std::to_string(end);
 
-	std::string sql = "SELECT * FROM messages WHERE sequence_number >= " + start_str + " AND sequence_number < " + end_str;
+	std::string sql = "SELECT * FROM " + table_name + " WHERE sequence_number >= " + start_str + " AND sequence_number < " + end_str;
 
 	return sql;
 }
@@ -621,7 +625,7 @@ std::list<Message> PostgreSqlPersistentStorage::get_messages(long start, long en
 
 long PostgreSqlPersistentStorage::load_sequence_number()
 {
-	std::string sql = "SELECT max(sequence_number) FROM messages;";
+	std::string sql = "SELECT max(sequence_number) FROM " + table_name + ";";
 
 	try{
 		connection *C = new connection(connection_string);

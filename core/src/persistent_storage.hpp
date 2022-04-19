@@ -130,7 +130,8 @@ public:
         std::string user,
         std::string password,
         std::string hostaddr,
-        std::string port
+        std::string port,
+        std::string table_name
     );
     PostgreSqlPersistentStorage(std::string json_params);
 
@@ -144,6 +145,7 @@ public:
     void detach();
 
 private:
+    std::string table_name;
     std::string connection_string;
     std::queue<Message> store_message_queue;
     std::thread *store_thread;
@@ -160,6 +162,7 @@ private:
         std::string port
     );
     void thread_fn();
+
     std::string create_insert_sql(Message message);
     std::string create_select_sql(long start, long end);
 
