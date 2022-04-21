@@ -7,7 +7,7 @@ import messaging.core.persistence.PersistentStorage;
 @Slf4j
 public class Publisher {
 
-    private NativePublisher publisher;
+    private NativePublisher publisher = null;
     private long nativeObjectPointer;
     private final String pubConnectionAddress;
     private final String repConnectionAddress;
@@ -61,6 +61,10 @@ public class Publisher {
     }
     public void publish(String jsonMessage){
         publisher.publishByJson(nativeObjectPointer, jsonMessage);
+    }
+
+    public boolean isPublisherReady(){
+        return publisher != null;
     }
 
 }

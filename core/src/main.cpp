@@ -25,7 +25,7 @@ void add_messages(Publisher *publisher)
 		Message mes;
 		//mes.set_sequence_number(i);
 		mes.set_timestamp(234241);
-		mes.set_topic("TRANSACTION");
+		mes.set_topic("txn_new");
 		mes.set_uuid(generate_uuid_v4());
 		
 		std::string body = "{\"message\": \"Good job!!!\"}";
@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
 	if (&tps == nullptr) std::cout << "NULL!" << '\n';
 
 	Publisher publisher(ctx, addr_pub, addr_rep, tps);
-	Subscriber subscriber(ctx, &tsps, "TRANSACTION", addr_sub, addr_req);
+	Subscriber subscriber(ctx, &tsps, "", addr_sub, addr_req);
 
 	std::thread appender(add_messages, &publisher);
 	std::thread poller(poll_message, &subscriber);

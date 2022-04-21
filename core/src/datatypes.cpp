@@ -14,7 +14,7 @@ Message::Message()
 
     sequence_number = 0;
     timestamp = std::time(nullptr);
-    topic = "TRANSACTION";
+    topic = "";
     body = "";
 }
 
@@ -25,7 +25,7 @@ Message::Message(std::string body)
 
     sequence_number = 0;
     timestamp = std::time(nullptr);
-    topic = "TRANSACTION";
+    topic = "";
 }
 
 Message::Message
@@ -38,7 +38,7 @@ Message::Message
 )
 {
     this->sequence_number = sequence_number;
-    this->uuid = generate_uuid_v4();
+    this->uuid = uuid;
     this->topic = topic;
     this->timestamp = timestamp;
     this->body = body;
@@ -53,7 +53,7 @@ Message::Message
 )
 {
     this->sequence_number = 0;
-    this->uuid = generate_uuid_v4();
+    this->uuid = uuid;
     this->topic = topic;
     this->timestamp = timestamp;
     this->body = body;
@@ -78,7 +78,7 @@ std::string Message::Serialize()
     
     cJSON_AddItemToObject(message, "uuid", uuid_json);
     cJSON_AddItemToObject(message, "topic", topic_json);
-    cJSON_AddItemToObject(message, "sequence_number", sequence_number_json);
+    cJSON_AddItemToObject(message, "sequenceNumber", sequence_number_json);
     cJSON_AddItemToObject(message, "timestamp", timestamp_json);
     cJSON_AddItemToObject(message, "body", body_json);
 
@@ -106,7 +106,7 @@ cJSON* Message::SerializeToCJSON()
 
     cJSON_AddItemToObject(message, "uuid", uuid_json);
     cJSON_AddItemToObject(message, "topic", topic_json);
-    cJSON_AddItemToObject(message, "sequence_number", sequence_number_json);
+    cJSON_AddItemToObject(message, "sequenceNumber", sequence_number_json);
     cJSON_AddItemToObject(message, "timestamp", timestamp_json);
     cJSON_AddItemToObject(message, "body", body_json);
 
@@ -122,7 +122,7 @@ bool Message::Deserialize(std::string json_string)
     
     uuid = cJSON_GetObjectItemCaseSensitive(json, "uuid")->valuestring;
     topic = cJSON_GetObjectItemCaseSensitive(json, "topic")->valuestring;
-    sequence_number = cJSON_GetObjectItemCaseSensitive(json, "sequence_number")->valueint;
+    sequence_number = cJSON_GetObjectItemCaseSensitive(json, "sequenceNumber")->valueint;
     timestamp = cJSON_GetObjectItemCaseSensitive(json, "timestamp")->valueint;
 
     body = std::string(cJSON_GetObjectItemCaseSensitive(json, "body")->valuestring);

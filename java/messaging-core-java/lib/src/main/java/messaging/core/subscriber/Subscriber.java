@@ -13,7 +13,7 @@ public class Subscriber {
     private final String subConnectionAddress;
     private final String reqConnectionAddress;
 
-    private NativeSubscriber subscriber;
+    private NativeSubscriber subscriber = null;
     private long nativeObjectPointer;
 
     public Subscriber(PersistentStorage storage, String topic, String subConnectionAddress, String reqConnectionAddress) {
@@ -68,6 +68,10 @@ public class Subscriber {
         }
 
         return messageOptional;
+    }
+
+    public boolean isSubscriberReady(){
+        return subscriber != null;
     }
 
 }
