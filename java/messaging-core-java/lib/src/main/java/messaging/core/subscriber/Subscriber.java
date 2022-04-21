@@ -9,18 +9,10 @@ import java.util.Optional;
 @Slf4j
 public class Subscriber {
 
-    private final String topic;
-    private final String subConnectionAddress;
-    private final String reqConnectionAddress;
-
     private NativeSubscriber subscriber = null;
     private long nativeObjectPointer;
 
     public Subscriber(PersistentStorage storage, String topic, String subConnectionAddress, String reqConnectionAddress) {
-
-        this.topic = topic;
-        this.subConnectionAddress = subConnectionAddress;
-        this.reqConnectionAddress = reqConnectionAddress;
 
         log.info("Subscriber creating...");
         Thread subCreator = new Thread(() -> {

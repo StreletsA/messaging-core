@@ -10,7 +10,7 @@ gcc -c -fPIC ../src/lmdb/*.c
 echo =======================================================================
 echo MESSAGING_CORE LIBRARY BUILDING...
 echo =======================================================================
-g++ -fPIC *.o -shared -o messaging_core.so -lzmq -lpthread -lpqxx
+g++ -fPIC *.o -shared -o libmessaging_core.so -lzmq -lpthread -lpqxx
 echo =======================================================================
 echo MESSAGING_CORE LIBRARY BUILDED!
 echo =======================================================================

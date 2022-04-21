@@ -112,8 +112,10 @@ public:
 private:
     std::string topic;
     std::string uuid;
+
     long sequence_number;
     long timestamp;
+
     std::string body;
 
 };

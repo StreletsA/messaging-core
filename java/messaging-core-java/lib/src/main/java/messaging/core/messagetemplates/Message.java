@@ -14,7 +14,7 @@ public class Message {
 
     private String topic;
     private String uuid;
-    private long sequence_number;
+    private long sequenceNumber;
     private long timestamp;
     private String body;
 
@@ -43,7 +43,7 @@ public class Message {
 
             uuid = msg.getUuid();
             topic = msg.getTopic();
-            sequence_number = msg.getSequence_number();
+            sequenceNumber = msg.getSequenceNumber();
             timestamp = msg.getTimestamp();
             body = msg.getBody();
 

@@ -54,7 +54,7 @@ public class Publisher {
         publish(
                 message.getTopic(),
                 message.getUuid(),
-                message.getSequence_number(),
+                message.getSequenceNumber(),
                 message.getTimestamp(),
                 message.getBody()
         );
