@@ -61,18 +61,18 @@ Publisher::Publisher(zmq::context_t *context, const char *pub_connection_address
     start();
 }
 
-void Publisher::publish(Message message)
+void Publisher::publish(Envelope message_envelope)
 {
     g_mutex.lock();
-    incoming_message_queue.push(message);
+    incoming_message_envelope_queue.push(message_envelope);
     g_mutex.unlock();
 }
 
-void Publisher::publish(std::string message_json)
+void Publisher::publish(std::string message_envelope_json)
 {
-    Message msg;
-    msg.Deserialize(message_json);
-    publish(msg);
+    Envelope msg_envelope;
+    msg_envelope.Deserialize(message_envelope_json);
+    publish(msg_envelope);
 }
 
 void Publisher::start()
@@ -89,48 +89,48 @@ void Publisher::pub_thread_fn()
     while(true)
     {
 
-        while(!incoming_message_queue.empty())
+        while(!incoming_message_envelope_queue.empty())
         {
             
             // Get message from queue
-            Message msg = incoming_message_queue.front();
-            incoming_message_queue.pop();
+            Envelope msg_envelope = incoming_message_envelope_queue.front();
+            incoming_message_envelope_queue.pop();
             sequence_number++;
 
             if(persistent_storage_interface != nullptr)
             {
                 // Setting sequence number from storage
-                msg.set_sequence_number(persistent_storage_interface->get_sequence_number() + 1);
-                persistent_storage_interface->store_message(msg);
+                msg_envelope.set_sequence_number(persistent_storage_interface->get_sequence_number() + 1);
+                persistent_storage_interface->store_message_envelope(msg_envelope);
             }
             else
             {
                 // Setting sequence number from our publisher seq num
-                msg.set_sequence_number(sequence_number);
+                msg_envelope.set_sequence_number(sequence_number);
             }
 
-            std::cout << "PUBLISHER: MSG SEQ_NUM -> " << msg.get_sequence_number() << '\n';
+            std::cout << "PUBLISHER: MSG SEQ_NUM -> " << msg_envelope.get_sequence_number() << '\n';
 
             // Create string data for sending: TOPIC + DATA
-            std::string topic = msg.get_topic();
-            std::string str_msg = msg.Serialize();
+            std::string topic = msg_envelope.get_topic();
+            std::string str_msg_envelope = msg_envelope.Serialize();
 
             // Create message from string data
             zmq::message_t message_topic(topic.size());
-            zmq::message_t message(str_msg.size());
+            zmq::message_t message_envelope(str_msg_envelope.size());
             memcpy (message_topic.data(), topic.data(), topic.size());
-            memcpy (message.data(), str_msg.data(), str_msg.size());
+            memcpy (message_envelope.data(), str_msg_envelope.data(), str_msg_envelope.size());
 
             // Send message
             pub_socket->send (message_topic, zmq::send_flags::sndmore);
-            pub_socket->send (message);
+            pub_socket->send (message_envelope);
 
             // HACK: publishing interval for java subscriber
             std::this_thread::sleep_for (std::chrono::microseconds(500000));
             
         }
 
-        while(incoming_message_queue.empty())
+        while(incoming_message_envelope_queue.empty())
         {
 
             //incoming_message_queue.wait();
@@ -156,29 +156,32 @@ void Publisher::rep_thread_fn()
         // sequence(message) - number of last message that publisher sent to client
 
 
-        zmq::message_t msg;
-        rep_socket->recv(&msg);
+        zmq::message_t msg_envelope;
+        rep_socket->recv(&msg_envelope);
         
         // Get string data from zmq message
-        std::string data = std::string(static_cast<char*>(msg.data()), msg.size());
+        std::string data = std::string(static_cast<char*>(msg_envelope.data()), msg_envelope.size());
 
         RecoveryRequest recovery_request;
         recovery_request.Deserialize(data);
 
         std::cout << "PUBLISHER: RECEIVED RECOVERY REQUEST: " << recovery_request.get_start_sequence_number() << " : " << recovery_request.get_end_sequence_number() << '\n';
 
-        std::list<Message> messages;
+        std::list<Envelope> message_envelopes;
+
+        long recovery_start_seq_num = recovery_request.get_start_sequence_number();
+        long recovery_end_seq_num = recovery_request.get_end_sequence_number();
 
         if (persistent_storage_interface != nullptr)
         {
-            messages = persistent_storage_interface->get_messages(recovery_request.get_start_sequence_number(), recovery_request.get_end_sequence_number());
-            std::cout << "PUBLISHER: MISSED MESSAGES GOT FROM STORAGE! SIZE: " << messages.size() << '\n';
+            message_envelopes = persistent_storage_interface->get_message_envelopes(recovery_start_seq_num, recovery_end_seq_num);
+            std::cout << "PUBLISHER: MISSED MESSAGES GOT FROM STORAGE! SIZE: " << message_envelopes.size() << '\n';
         }
 
         RecoveryResponse recovery_response;
-        recovery_response.set_messages(messages);
+        recovery_response.set_message_envelopes(message_envelopes);
 
-        std::cout << "PUBLISHER: RECOVERY RESPONSE MESSAGES SIZE: " << recovery_response.get_messages().size() << '\n';
+        std::cout << "PUBLISHER: RECOVERY RESPONSE MESSAGES SIZE: " << recovery_response.get_message_envelopes().size() << '\n';
         
         std::string response_json = recovery_response.Serialize();
 
@@ -191,9 +194,9 @@ void Publisher::rep_thread_fn()
 
 }
 
-std::queue<Message> *Publisher::get_incoming_message_queue()
+std::queue<Envelope> *Publisher::get_incoming_message_envelope_queue()
 {
-    return &incoming_message_queue;
+    return &incoming_message_envelope_queue;
 }
 
 PersistentStorageInterface *Publisher::get_persistent_storage_interface()

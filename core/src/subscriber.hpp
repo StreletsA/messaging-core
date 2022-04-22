@@ -33,7 +33,7 @@ private:
     zmq::socket_t *req_socket;
 
     std::string topic;
-    std::queue<Message> messages;
+    std::queue<Envelope> message_envelopes;
     std::thread *sub_thread;
     
     PersistentStorageInterface *storage;

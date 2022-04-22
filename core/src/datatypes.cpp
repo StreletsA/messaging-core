@@ -8,32 +8,38 @@
     #########################################################
 */
 
-Message::Message()
+Envelope::Envelope()
 {
     this->uuid = generate_uuid_v4();
 
     sequence_number = 0;
     timestamp = std::time(nullptr);
+    success = true;
+    error = "";
     topic = "";
     body = "";
 }
 
-Message::Message(std::string body)
+Envelope::Envelope(std::string body)
 {
     this->uuid = generate_uuid_v4();
     this->body = body;
 
+    success = true;
+    error = "";
     sequence_number = 0;
     timestamp = std::time(nullptr);
     topic = "";
 }
 
-Message::Message
+Envelope::Envelope
 (
     std::string topic,
     std::string uuid,
     long sequence_number,
     long timestamp,
+    bool success,
+    std::string error,
     std::string body
 )
 {
@@ -41,14 +47,18 @@ Message::Message
     this->uuid = uuid;
     this->topic = topic;
     this->timestamp = timestamp;
+    this->success = success;
+    this->error = error;
     this->body = body;
 }
 
-Message::Message
+Envelope::Envelope
 (
     std::string topic,
     std::string uuid,
     long timestamp,
+    bool success,
+    std::string error,
     std::string body
 )
 {
@@ -56,10 +66,12 @@ Message::Message
     this->uuid = uuid;
     this->topic = topic;
     this->timestamp = timestamp;
+    this->success = success;
+    this->error = error;
     this->body = body;
 }
 
-std::string Message::Serialize()
+std::string Envelope::Serialize()
 {
 
     cJSON *message = cJSON_CreateObject();
@@ -68,25 +80,31 @@ std::string Message::Serialize()
     cJSON *topic_json = NULL;
     cJSON *sequence_number_json = NULL;
     cJSON *timestamp_json = NULL;
+    cJSON *success_json = NULL;
+    cJSON *error_json = NULL;
     cJSON *body_json = NULL;
 
     uuid_json = cJSON_CreateString(uuid.c_str());
     topic_json = cJSON_CreateString(topic.c_str());
     sequence_number_json = cJSON_CreateNumber(sequence_number);
     timestamp_json = cJSON_CreateNumber(timestamp);
+    success_json = cJSON_CreateBool(success);
+    error_json = cJSON_CreateString(error.c_str());
     body_json = cJSON_CreateString(body.c_str());
     
     cJSON_AddItemToObject(message, "uuid", uuid_json);
     cJSON_AddItemToObject(message, "topic", topic_json);
     cJSON_AddItemToObject(message, "sequenceNumber", sequence_number_json);
     cJSON_AddItemToObject(message, "timestamp", timestamp_json);
+    cJSON_AddItemToObject(message, "success", success_json);
+    cJSON_AddItemToObject(message, "error", error_json);
     cJSON_AddItemToObject(message, "body", body_json);
 
     return cJSON_Print(message);
 
 }
 
-cJSON* Message::SerializeToCJSON()
+cJSON* Envelope::SerializeToCJSON()
 {
 
     cJSON *message = cJSON_CreateObject();
@@ -95,19 +113,24 @@ cJSON* Message::SerializeToCJSON()
     cJSON *topic_json = NULL;
     cJSON *sequence_number_json = NULL;
     cJSON *timestamp_json = NULL;
+    cJSON *success_json = NULL;
+    cJSON *error_json = NULL;
     cJSON *body_json = NULL;
 
     uuid_json = cJSON_CreateString(uuid.c_str());
     topic_json = cJSON_CreateString(topic.c_str());
     sequence_number_json = cJSON_CreateNumber(sequence_number);
     timestamp_json = cJSON_CreateNumber(timestamp);
-
+    success_json = cJSON_CreateBool(success);
+    error_json = cJSON_CreateString(error.c_str());
     body_json = cJSON_CreateString(body.c_str());
 
     cJSON_AddItemToObject(message, "uuid", uuid_json);
     cJSON_AddItemToObject(message, "topic", topic_json);
     cJSON_AddItemToObject(message, "sequenceNumber", sequence_number_json);
     cJSON_AddItemToObject(message, "timestamp", timestamp_json);
+    cJSON_AddItemToObject(message, "success", success_json);
+    cJSON_AddItemToObject(message, "error", error_json);
     cJSON_AddItemToObject(message, "body", body_json);
 
 
@@ -115,7 +138,7 @@ cJSON* Message::SerializeToCJSON()
 
 }
 
-bool Message::Deserialize(std::string json_string)
+bool Envelope::Deserialize(std::string json_string)
 {
 
     cJSON *json = cJSON_Parse(json_string.c_str());
@@ -124,61 +147,82 @@ bool Message::Deserialize(std::string json_string)
     topic = cJSON_GetObjectItemCaseSensitive(json, "topic")->valuestring;
     sequence_number = cJSON_GetObjectItemCaseSensitive(json, "sequenceNumber")->valueint;
     timestamp = cJSON_GetObjectItemCaseSensitive(json, "timestamp")->valueint;
-
+    success = cJSON_GetObjectItemCaseSensitive(json, "success")->valueint == 1;
+    error = cJSON_GetObjectItemCaseSensitive(json, "error")->valuestring;
     body = std::string(cJSON_GetObjectItemCaseSensitive(json, "body")->valuestring);
 
     return true;
 
 }
 
-long Message::get_sequence_number()
+long Envelope::get_sequence_number()
 {
     return sequence_number;
 }
 
-void Message::set_sequence_number(long sequence_number)
+void Envelope::set_sequence_number(long sequence_number)
 {
     this->sequence_number = sequence_number;
 }
 
-std::string Message::get_uuid()
+std::string Envelope::get_uuid()
 {
     return uuid;
 }
 
-void Message::set_uuid(std::string uuid)
+void Envelope::set_uuid(std::string uuid)
 {
     this->uuid = uuid;
 }
 
-std::string Message::get_topic()
+std::string Envelope::get_topic()
 {
     return topic;
 }
 
-void Message::set_topic(std::string topic)
+void Envelope::set_topic(std::string topic)
 {
     this->topic = topic;
 }
 
-long Message::get_timestamp()
+long Envelope::get_timestamp()
 {
     return timestamp;
 }
 
-void Message::set_timestamp(long timestamp)
+void Envelope::set_timestamp(long timestamp)
 {
     this->timestamp = timestamp;
 }
 
-std::string Message::get_body()
+std::string Envelope::get_body()
 {
     return body;
 }
 
-void Message::set_body(std::string body)
+void Envelope::set_body(std::string body)
 {
     this->body = body;
+}
+
+std::string Envelope::get_error()
+{
+    return error;
+}
+
+void Envelope::set_error(std::string error)
+{
+    this->error = error;
+}
+
+bool Envelope::get_success()
+{
+    return success;
+}
+
+void Envelope::set_success(bool success)
+{
+    this->success = success;
 }
 
 /*
@@ -200,8 +244,8 @@ std::string RecoveryRequest::Serialize()
     startseqnum_json = cJSON_CreateNumber(start_sequence_number);
     endseqnum_json = cJSON_CreateNumber(end_sequence_number);
 
-    cJSON_AddItemToObject(recovery_request, "start_sequence_number", startseqnum_json);
-    cJSON_AddItemToObject(recovery_request, "end_sequence_number", endseqnum_json);
+    cJSON_AddItemToObject(recovery_request, "startSequenceNumber", startseqnum_json);
+    cJSON_AddItemToObject(recovery_request, "endSequenceNumber", endseqnum_json);
 
     return cJSON_Print(recovery_request);
 
@@ -212,8 +256,8 @@ bool RecoveryRequest::Deserialize(std::string json_string)
 
     cJSON *json = cJSON_Parse(json_string.c_str());
     
-    start_sequence_number = cJSON_GetObjectItemCaseSensitive(json, "start_sequence_number")->valueint;
-    end_sequence_number = cJSON_GetObjectItemCaseSensitive(json, "end_sequence_number")->valueint;
+    start_sequence_number = cJSON_GetObjectItemCaseSensitive(json, "startSequenceNumber")->valueint;
+    end_sequence_number = cJSON_GetObjectItemCaseSensitive(json, "endSequenceNumber")->valueint;
 
     return true;
 
@@ -250,14 +294,14 @@ long RecoveryRequest::get_end_sequence_number()
 std::string RecoveryResponse::Serialize()
 {
     cJSON *result = cJSON_CreateObject();
-    cJSON *array = cJSON_AddArrayToObject(result, "messages");
+    cJSON *array = cJSON_AddArrayToObject(result, "recoveryList");
 
-    std::list<Message>::iterator it;
-    for (it = messages.begin(); it != messages.end(); it++)
+    std::list<Envelope>::iterator it;
+    for (it = message_envelopes.begin(); it != message_envelopes.end(); it++)
     {
-        cJSON *message = it->SerializeToCJSON();
+        cJSON *envelope = it->SerializeToCJSON();
         
-        cJSON_AddItemToArray(array, message);
+        cJSON_AddItemToArray(array, envelope);
     }
     return cJSON_Print(result);
 
@@ -266,29 +310,29 @@ std::string RecoveryResponse::Serialize()
 bool RecoveryResponse::Deserialize(std::string json_string)
 {
     cJSON *json = cJSON_Parse(json_string.c_str());
-    cJSON *messages_array_json = cJSON_GetObjectItem(json, "messages");
-    long size = cJSON_GetArraySize(messages_array_json);
+    cJSON *message_envelopes_array_json = cJSON_GetObjectItem(json, "recoveryList");
+    long size = cJSON_GetArraySize(message_envelopes_array_json);
 
-    Message msg;
+    Envelope msg_envelope;
 
     for (long i = 0; i < size; i++)
     {
-        cJSON *msg_json = cJSON_GetArrayItem(messages_array_json, i);
-        msg.Deserialize(cJSON_Print(msg_json));
+        cJSON *msg_envelope_json = cJSON_GetArrayItem(message_envelopes_array_json, i);
+        msg_envelope.Deserialize(cJSON_Print(msg_envelope_json));
 
-        messages.push_back(msg);
+        message_envelopes.push_back(msg_envelope);
     }
 
     return true;
 
 }
 
-void RecoveryResponse::set_messages(std::list<Message> messages)
+void RecoveryResponse::set_message_envelopes(std::list<Envelope> message_envelopes)
 {
-    this->messages = messages;
+    this->message_envelopes = message_envelopes;
 }
 
-std::list<Message> RecoveryResponse::get_messages()
+std::list<Envelope> RecoveryResponse::get_message_envelopes()
 {
-    return messages;
+    return message_envelopes;
 }

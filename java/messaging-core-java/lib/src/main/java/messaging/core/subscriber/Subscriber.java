@@ -7,63 +7,110 @@ import messaging.core.persistence.PersistentStorage;
 import java.util.Optional;
 
 @Slf4j
-public class Subscriber {
+public class Subscriber{
 
-    private NativeSubscriber subscriber = null;
+    private final SubscriberParams subscriberParams;
+
+    private Thread subscriberCreator;
+    private NativeSubscriber subscriber;
     private long nativeObjectPointer;
 
-    public Subscriber(PersistentStorage storage, String topic, String subConnectionAddress, String reqConnectionAddress) {
+    public Subscriber(SubscriberParams subscriberParams) {
+
+        this.subscriberParams = subscriberParams;
 
         log.info("Subscriber creating...");
-        Thread subCreator = new Thread(() -> {
+        createNativeSubscriber();
+        log.info("Subscriber created!");
+
+    }
+
+    public boolean isSubscriberReady(){
+        return subscriber != null;
+    }
+
+    public SubscriberParams getSubscriberParams(){
+        return subscriberParams;
+    }
+
+    public Optional<String> poll(){
+
+        Optional<String> strMessageOptional = Optional.empty();
+
+        try{
+
+            String strMessage = subscriber.poll(nativeObjectPointer);
+
+            if (strMessage.length() > 0) {
+                strMessageOptional = Optional.of(strMessage);
+            }
+
+        }catch (Exception e){
+            log.error(e.getMessage());
+        }
+
+        return strMessageOptional;
+    }
+
+    public Optional<Message> pollMessage(){
+
+        Optional<Message> messageOptional = Optional.empty();
+        Optional<String> strMessage = poll();
+
+        if (strMessage.isPresent()){
+
+            String json = strMessage.get();
+            messageOptional = getMessageFromJson(json);
+
+        }
+
+        return messageOptional;
+    }
+
+    private void createNativeSubscriber(){
+
+        PersistentStorage storage = subscriberParams.getStorage();
+        String topic = subscriberParams.getTopic();
+        String subConnectionAddress = subscriberParams.getSubConnectionAddress();
+        String reqConnectionAddress = subscriberParams.getReqConnectionAddress();
+
+        subscriberCreator = new Thread(() -> {
 
             subscriber = new NativeSubscriber(storage.serialize(), topic, subConnectionAddress, reqConnectionAddress);
             nativeObjectPointer = subscriber.getNativeObjectPointer();
 
         });
 
-        subCreator.start();
+        subscriberCreator.start();
+
+        //tryJoin();
+
+    }
+
+    private void tryJoin(){
 
         try {
-            subCreator.join();
+            subscriberCreator.join();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
         }
-        log.info("Subscriber created!");
 
     }
 
-    public String poll(){
-        String ans = "";
-
-        try{
-            ans = subscriber.poll(nativeObjectPointer);
-        }catch (NullPointerException e){
-            log.error("Subscriber is null!");
-        }
-
-        return ans;
-    }
-    public Optional<Message> pollMessage(){
+    private Optional<Message> getMessageFromJson(String json){
 
         Optional<Message> messageOptional = Optional.empty();
 
-        try{
-            String json = poll();
-            if (json.length() > 0) {
-                messageOptional = Optional.of(new Message(json));
-            }
-        }catch (IllegalStateException e){
-            log.error("Json is illegal!");
-            e.printStackTrace();
-            messageOptional = Optional.empty();
+        try {
+            Message message = Message.fromJson(json);
+            messageOptional = Optional.of(message);
+        }catch (Exception e){
+            log.error(e.getMessage());
         }
 
         return messageOptional;
+
     }
 
-    public boolean isSubscriberReady(){
-        return subscriber != null;
-    }
 
 }

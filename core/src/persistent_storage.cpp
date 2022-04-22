@@ -35,11 +35,11 @@ TestPersistenceStorage::TestPersistenceStorage()
 	store_thread = new std::thread(&TestPersistenceStorage::thread_fn, this);
 }
 
-std::list<Message> TestPersistenceStorage::get_messages(long start, long end)
+std::list<Envelope> TestPersistenceStorage::get_message_envelopes(long start, long end)
 {
 
-    std::list<Message> messages;
-	std::list<Message>::iterator it;
+    std::list<Envelope> message_envelopes;
+	std::list<Envelope>::iterator it;
 
 	// Start-up (Synchronization)
 	if (end == 0)
@@ -48,37 +48,37 @@ std::list<Message> TestPersistenceStorage::get_messages(long start, long end)
 		if (start < sequence_number)
 		{
 			int i = start;
-			while(i < message_storage.size())
+			while(i < message_envelopes_storage.size())
 			{
-				it = message_storage.begin();
+				it = message_envelopes_storage.begin();
 				std::advance(it, i);
-				messages.push_back(*it);
+				message_envelopes.push_back(*it);
 				i++;
 			}
 
-			return messages;
+			return message_envelopes;
 		}
 
-		return messages;
+		return message_envelopes;
 	}
 
     int i = start;
 	while(i < end)
 	{
-		it = message_storage.begin();
+		it = message_envelopes_storage.begin();
 		std::advance(it, i);
-		messages.push_back(*it);
+		message_envelopes.push_back(*it);
 		i++;
 	}
 
-    return messages;
+    return message_envelopes;
 
 }
 
-void TestPersistenceStorage::store_message(Message message)
+void TestPersistenceStorage::store_message_envelope(Envelope message_envelope)
 {
 
-	store_message_queue.push(message);
+	store_message_envelope_queue.push(message_envelope);
     sequence_number++;
 
 }
@@ -94,13 +94,13 @@ void TestPersistenceStorage::thread_fn()
 	while(true)
 	{
 
-		while(!store_message_queue.empty())
+		while(!store_message_envelope_queue.empty())
 		{
 			
-			Message mes = store_message_queue.front();
-			store_message_queue.pop();
+			Envelope msg_envelope = store_message_envelope_queue.front();
+			store_message_envelope_queue.pop();
 
-			message_storage.push_back(mes);
+			message_envelopes_storage.push_back(msg_envelope);
 
 		}
 
@@ -138,13 +138,13 @@ LmdbStorage::LmdbStorage()
 
 }
 
-std::list<Message> LmdbStorage::get_messages(long start, long end)
+std::list<Envelope> LmdbStorage::get_message_envelopes(long start, long end)
 {
 
-	std::list<Message> messages;
+	std::list<Envelope> message_envelopes;
 
 	if (start == 0) start = 1;
-	if (sequence_number == 0) return messages;
+	if (sequence_number == 0) return message_envelopes;
 
 	// Start-up
 	if (end == 0) end = sequence_number;
@@ -154,7 +154,7 @@ std::list<Message> LmdbStorage::get_messages(long start, long end)
 	try
 	{
 
-		Message *msg;
+		Envelope *msg_envelope;
 
 		for (int i = start; i < end; i++)
 		{
@@ -162,19 +162,19 @@ std::list<Message> LmdbStorage::get_messages(long start, long end)
 
 			char* key = (char *) required_seq_num.c_str();
 
-			char* msg_str = getdb(key);
+			char* msg_envelope_str = getdb(key);
 
-			if (msg_str == nullptr)
+			if (msg_envelope_str == nullptr)
 			{
 				std::cout << "LMDB_STORAGE: GET MESSAGES: KEY NOT FOUND -> " << key << " (sequence number)" << '\n';
 				continue;
 			}
 
-			msg = new Message();
-			msg->Deserialize(msg_str);
+			msg_envelope = new Envelope();
+			msg_envelope->Deserialize(msg_envelope_str);
 
 			std::lock_guard<std::mutex> lg(g_mutex);
-			messages.push_back(*msg);
+			message_envelopes.push_back(*msg_envelope);
 
 		}
 	}
@@ -183,15 +183,15 @@ std::list<Message> LmdbStorage::get_messages(long start, long end)
 		std::cerr << e.what() << std::endl;
 	}
 
-	return messages;
+	return message_envelopes;
 
 }
 
-void LmdbStorage::store_message(Message message)
+void LmdbStorage::store_message_envelope(Envelope message_envelope)
 {
 	sequence_number++;
-	message.set_sequence_number(sequence_number);
-	store_message_queue.push(message);
+	message_envelope.set_sequence_number(sequence_number);
+	store_message_envelope_queue.push(message_envelope);
 
 }
 
@@ -320,15 +320,15 @@ void LmdbStorage::thread_fn()
 	while (true)
 	{
 
-		while (!store_message_queue.empty())
+		while (!store_message_envelope_queue.empty())
 		{
 
-			Message msg = store_message_queue.front();
-			store_message_queue.pop();
+			Envelope msg_envelope = store_message_envelope_queue.front();
+			store_message_envelope_queue.pop();
 
-			std::string msg_str = msg.Serialize();
+			std::string msg_str = msg_envelope.Serialize();
 
-			char* key = (char *) std::to_string(msg.get_sequence_number()).c_str();
+			char* key = (char *) std::to_string(msg_envelope.get_sequence_number()).c_str();
 			char* value = (char *) msg_str.c_str();
 
 			if (putdb(key, value) != 0)
@@ -355,26 +355,26 @@ TestSubscriberPersistenceStorage::TestSubscriberPersistenceStorage()
 	sequence_number = 0;
 }
 
-std::list<Message> TestSubscriberPersistenceStorage::get_messages(long start, long end)
+std::list<Envelope> TestSubscriberPersistenceStorage::get_message_envelopes(long start, long end)
 {
 
 	//std::cout << "SUBSCRIBER STORAGE: STORAGE SIZE: " << message_storage.size() << " START: " << start << " END: " << end << '\n';
 
-    std::list<Message> messages;
-	std::list<Message>::iterator it;
+    std::list<Envelope> message_envelopes;
+	std::list<Envelope>::iterator it;
 
 	g_mutex.lock();
     int i = start;
 	while(i < end)
 	{
-		it = message_storage.begin();
+		it = message_envelopes_storage.begin();
 		std::advance(it, i);
-		messages.push_back(*it);
+		message_envelopes.push_back(*it);
 		i++;
 	}
 	g_mutex.unlock();
 
-    return messages;
+    return message_envelopes;
 
 }
 
@@ -383,14 +383,14 @@ long TestSubscriberPersistenceStorage::get_sequence_number()
 	return sequence_number;
 }
 
-std::list<Message> TestSubscriberPersistenceStorage::get_messages()
+std::list<Envelope> TestSubscriberPersistenceStorage::get_message_envelopes()
 {
-	return get_messages(0, message_storage.size());
+	return get_message_envelopes(0, message_envelopes_storage.size());
 }
 
-void TestSubscriberPersistenceStorage::store_message(Message message)
+void TestSubscriberPersistenceStorage::store_message_envelope(Envelope message_envelope)
 {
-	store_message_queue.push(message);
+	store_message_envelope_queue.push(message_envelope);
     sequence_number++;
 
 }
@@ -406,13 +406,13 @@ void TestSubscriberPersistenceStorage::thread_fn()
 	while(true)
 	{
 
-		while(!store_message_queue.empty())
+		while(!store_message_envelope_queue.empty())
 		{
 
-			Message mes = store_message_queue.front();
-			store_message_queue.pop();
+			Envelope msg_envelope = store_message_envelope_queue.front();
+			store_message_envelope_queue.pop();
 
-			message_storage.push_back(mes);
+			message_envelopes_storage.push_back(msg_envelope);
 
 		}
 
@@ -513,10 +513,10 @@ void PostgreSqlPersistentStorage::connect
 	store_thread = new std::thread(&PostgreSqlPersistentStorage::thread_fn, this);
 }
 
-void PostgreSqlPersistentStorage::store_message(Message message)
+void PostgreSqlPersistentStorage::store_message_envelope(Envelope message_envelope)
 {
 	std::lock_guard<std::mutex> lg(g_mutex);
-	store_message_queue.push(message);
+	store_message_envelope_queue.push(message_envelope);
     sequence_number++;
 }
 
@@ -525,14 +525,16 @@ long PostgreSqlPersistentStorage::get_sequence_number()
 	return sequence_number;
 }
 
-std::string PostgreSqlPersistentStorage::create_insert_sql(Message message)
+std::string PostgreSqlPersistentStorage::create_insert_sql(Envelope message_envelope)
 {
 
 	//std::string sequence_number_str = std::to_string(message.get_sequence_number());
-	std::string uuid_str = message.get_uuid();
-	std::string topic_str = message.get_topic();
-	std::string timestamp_str = std::to_string(message.get_timestamp());
-	std::string body_json = message.get_body();
+	std::string uuid_str = message_envelope.get_uuid();
+	std::string topic_str = message_envelope.get_topic();
+	std::string timestamp_str = std::to_string(message_envelope.get_timestamp());
+	std::string success_str = message_envelope.get_success() ? "true" : "false";
+	std::string error_str = message_envelope.get_error();
+	std::string body_json = message_envelope.get_body();
 
 	/*
 	std::string sql = "INSERT INTO " + table_name + " (sequence_number, uuid, topic, timestamp, body) " \
@@ -543,10 +545,12 @@ std::string PostgreSqlPersistentStorage::create_insert_sql(Message message)
 					"'" + body_json + "');";
 	*/
 
-	std::string sql = "INSERT INTO " + table_name + "(uuid, topic, timestamp, body) " \
+	std::string sql = "INSERT INTO " + table_name + "(uuid, topic, timestamp, success, error, body) " \
 					"VALUES('" + uuid_str + "', " \
 					"'" + topic_str + "', " \
 					"" + timestamp_str + ", " \
+					"" + success_str + ", " \
+					"'" + error_str + "', " \
 					"'" + body_json + "');";
 	
 	return sql;
@@ -558,17 +562,17 @@ std::string PostgreSqlPersistentStorage::create_select_sql(long start, long end)
 	std::string start_str = std::to_string(start);
 	std::string end_str = std::to_string(end);
 
-	std::string sql = "SELECT * FROM " + table_name + " WHERE sequence_number >= " + start_str + " AND sequence_number < " + end_str;
+	std::string sql = "SELECT * FROM " + table_name + " WHERE sequenceNumber >= " + start_str + " AND sequenceNumber < " + end_str;
 
 	return sql;
 }
 
-std::list<Message> PostgreSqlPersistentStorage::get_messages(long start, long end)
+std::list<Envelope> PostgreSqlPersistentStorage::get_message_envelopes(long start, long end)
 {
 
-	std::list<Message> messages;
+	std::list<Envelope> message_envelopes;
 
-	if (sequence_number == 0) return messages;
+	if (sequence_number == 0) return message_envelopes;
 
 	// Start-up
 	if (end == 0) end = sequence_number;
@@ -582,35 +586,39 @@ std::list<Message> PostgreSqlPersistentStorage::get_messages(long start, long en
 		nontransaction N(*C);
 		result R( N.exec( sql ));
 
-		Message *msg;
+		Envelope *msg_envelope;
+
 		long sequence_number;
 		std::string uuid;
 		std::string topic;
 		long timestamp;
-		MessageType message_type;
-		bool needs_reply;
+		bool success;
+		std::string error;
 		std::string body;
 
 		for (result::const_iterator c = R.begin(); c != R.end(); ++c)
 		{
-
-			sequence_number = c[2].as<int>();
-			uuid = c[1].as<std::string>();
 			topic = c[0].as<std::string>();
+			uuid = c[1].as<std::string>();
+			sequence_number = c[2].as<int>();
 			timestamp = c[3].as<int>();
 			body = c[4].as<std::string>();
+			success = c[5].as<bool>();
+			error = c[6].as<std::string>();
 
-			msg = new Message
+			msg_envelope = new Envelope
 			(
 				topic,
 				uuid,
 				sequence_number,
 				timestamp,
+				success,
+				error,
 				body
 			);
 
 			std::lock_guard<std::mutex> lg(g_mutex);
-			messages.push_back(*msg);
+			message_envelopes.push_back(*msg_envelope);
 
 		}
 	}
@@ -619,13 +627,20 @@ std::list<Message> PostgreSqlPersistentStorage::get_messages(long start, long en
 		std::cerr << e.what() << std::endl;
 	}
 
-	return messages;
+	return message_envelopes;
+
+}
+
+long PostgreSqlPersistentStorage::load_sequence_number_for_topic(std::string topic)
+{
+
+	std::string sql = "SELECT COUNT(topic) FROM '" + table_name + "' WHERE topic = " + topic = ";";
 
 }
 
 long PostgreSqlPersistentStorage::load_sequence_number()
 {
-	std::string sql = "SELECT max(sequence_number) FROM " + table_name + ";";
+	std::string sql = "SELECT max(sequenceNumber) FROM " + table_name + ";";
 
 	try{
 		connection *C = new connection(connection_string);
@@ -656,18 +671,18 @@ void PostgreSqlPersistentStorage::thread_fn()
 {
 	while (true)
 	{
-		while (!store_message_queue.empty())
+		while (!store_message_envelope_queue.empty())
 		{
 			
 			try
 			{
 				std::lock_guard<std::mutex> lg(g_mutex);
-				Message message = store_message_queue.front();
-				store_message_queue.pop();
+				Envelope message_envelope = store_message_envelope_queue.front();
+				store_message_envelope_queue.pop();
 
 				connection *C = new connection(connection_string);
 				work W(*C);
-				W.exec(create_insert_sql(message));
+				W.exec(create_insert_sql(message_envelope));
 				W.commit();
 			}
 			catch (const std::exception &e)

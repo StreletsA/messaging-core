@@ -1,5 +1,6 @@
 package messaging.core.messagetemplates;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -10,7 +11,7 @@ public class MessageTest {
 
     @Disabled
     @Test
-    void legalJsonDeserialize(){
+    void legalJsonDeserialize() throws JsonProcessingException {
 
         Message message = new Message(
                 "test_uuid",
@@ -20,7 +21,7 @@ public class MessageTest {
                 "{\"string_data\": \"Test string data\"}"
         );
 
-        Message deserializedMessage = new Message(legalMessageJson);
+        Message deserializedMessage = Message.fromJson(legalMessageJson);
 
         assertEquals(message, deserializedMessage);
 
@@ -28,7 +29,7 @@ public class MessageTest {
 
     @Disabled
     @Test
-    void serializeAndDeserialize(){
+    void serializeAndDeserialize() throws JsonProcessingException {
 
         Message message = new Message(
                 "test_uuid",
@@ -38,7 +39,7 @@ public class MessageTest {
                 "{\"string_data\": \"Test string data\"}"
         );
 
-        Message deserializedMessage = new Message(message.serialize());
+        Message deserializedMessage = Message.fromJson(message.toJson());
 
         assertEquals(message, deserializedMessage);
 

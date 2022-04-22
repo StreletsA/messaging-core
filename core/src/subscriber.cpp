@@ -34,17 +34,17 @@ Subscriber::Subscriber(zmq::context_t *context, PersistentStorageInterface *stor
 
 std::string Subscriber::poll()
 {
-    if (!messages.empty())
+    if (!message_envelopes.empty())
     {
-        Message msg = messages.front();
-        messages.pop();
+        Envelope msg_envelope = message_envelopes.front();
+        message_envelopes.pop();
 
         if (storage != nullptr)
         {
-            storage->store_message(msg);
+            storage->store_message_envelope(msg_envelope);
         }
 
-        return msg.Serialize();
+        return msg_envelope.Serialize();
     }
     
 
@@ -82,7 +82,7 @@ void Subscriber::detach()
 void Subscriber::do_recovery(long startseqnum, long endseqnum)
 {
 
-    std::cout << "SUBSCRIBER: DO RECOVERY: MESSAGE SIZE -> " << messages.size() << '\n';
+    std::cout << "SUBSCRIBER: DO RECOVERY: MESSAGE SIZE -> " << message_envelopes.size() << '\n';
     std::cout << "SUBSCRIBER: DO RECOVERY " << startseqnum << " : " << endseqnum << '\n';
 
     if (startseqnum > endseqnum)
@@ -117,18 +117,18 @@ void Subscriber::do_recovery(long startseqnum, long endseqnum)
     RecoveryResponse recovery_response;
     recovery_response.Deserialize(resp_data);
 
-    std::list<Message> missed_messages = recovery_response.get_messages(); 
-    std::cout << "SUBSCRIBER: MISSED MESSAGES SIZE: " << missed_messages.size() << '\n';
+    std::list<Envelope> missed_message_envelopes = recovery_response.get_message_envelopes(); 
+    std::cout << "SUBSCRIBER: MISSED MESSAGES SIZE: " << missed_message_envelopes.size() << '\n';
     
-    for (Message msg : missed_messages)
+    for (Envelope msg_envelope : missed_message_envelopes)
     {
-        if (msg.get_sequence_number() > sequence_number)
+        if (msg_envelope.get_sequence_number() > sequence_number)
         {
-            sequence_number = msg.get_sequence_number();
-            messages.push(msg);
+            sequence_number = msg_envelope.get_sequence_number();
+            message_envelopes.push(msg_envelope);
         }
     }
-    std::cout << "SUBSCRIBER: MESSAGES SIZE: " << messages.size() << '\n';
+    std::cout << "SUBSCRIBER: MESSAGES SIZE: " << message_envelopes.size() << '\n';
 }
 
 void Subscriber::thread_fn()
@@ -153,15 +153,15 @@ void Subscriber::thread_fn()
         std::cout << "SUBSCRIBER: RECV TOPIC -> " << topic << '\n';
         // Delete topic name from string data and get json
         //std::string message_json = data.substr(topic.size());
-        std::string message_json = data;
+        std::string message_envelope_json = data;
 
         // Get message from json. Message data is still json format.
-        if (message_json.size() > 0)
+        if (message_envelope_json.size() > 0)
         {
-            Message msg;
-            msg.Deserialize(message_json);
+            Envelope msg_envelope;
+            msg_envelope.Deserialize(message_envelope_json);
 
-            long msg_sequence_number = msg.get_sequence_number();
+            long msg_sequence_number = msg_envelope.get_sequence_number();
 
             std::cout << "SUBSCRIBER: RECEIVED MESSAGE WITH SEQ_NUM: " << msg_sequence_number << '\n';
 
@@ -176,7 +176,7 @@ void Subscriber::thread_fn()
             }
 
             // Add message into messages queue
-            messages.push(msg);
+            message_envelopes.push(msg_envelope);
             sequence_number = msg_sequence_number;
         }
 

@@ -7,41 +7,39 @@ import messaging.core.persistence.PersistentStorage;
 @Slf4j
 public class Publisher {
 
-    private NativePublisher publisher = null;
+    private final PublisherParams publisherParams;
+
+    private Thread publisherCreator;
+    private NativePublisher nativePublisher;
     private long nativeObjectPointer;
-    private final String pubConnectionAddress;
-    private final String repConnectionAddress;
 
-    public Publisher(PersistentStorage storage, String pubConnectionAddress, String repConnectionAddress){
+    public Publisher(PublisherParams publisherParams){
 
-        this.pubConnectionAddress = pubConnectionAddress;
-        this.repConnectionAddress = repConnectionAddress;
+        this.publisherParams = publisherParams;
 
         log.info("Publisher creating...");
-        Thread pubCreator = new Thread(() -> {
-            publisher = new NativePublisher(storage.serialize(), pubConnectionAddress, repConnectionAddress);
-            nativeObjectPointer = publisher.getNativeObjectPointer();
-            log.info("Publisher created!");
-        });
+        createNativePublisher();
+        log.info("Publisher created!");
 
-        pubCreator.start();
-
-//        try {
-//            pubCreator.join();
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
     }
 
-    public String getPubConnectionAddress() {
-        return pubConnectionAddress;
-    }
-    public String getRepConnectionAddress() {
-        return repConnectionAddress;
+    public PublisherParams getPublisherParams(){
+        return publisherParams;
     }
 
-    public void publish(String topic, String uuid, long sequenceNumber, long timestamp, String body){
-        publisher.publish(
+    public boolean isPublisherReady(){
+        return nativePublisher != null;
+    }
+
+    public void publish(Message message) {
+
+        String topic = message.getTopic();
+        String uuid = message.getUuid();
+        long sequenceNumber = message.getSequenceNumber();
+        long timestamp = message.getTimestamp();
+        String body = message.getBody();
+
+        nativePublisher.publish(
                 nativeObjectPointer,
                 topic,
                 uuid,
@@ -50,21 +48,36 @@ public class Publisher {
                 body
         );
     }
-    public void publish(Message message) {
-        publish(
-                message.getTopic(),
-                message.getUuid(),
-                message.getSequenceNumber(),
-                message.getTimestamp(),
-                message.getBody()
-        );
-    }
-    public void publish(String jsonMessage){
-        publisher.publishByJson(nativeObjectPointer, jsonMessage);
+
+    public void publishByJson(String jsonMessage){
+        nativePublisher.publishByJson(nativeObjectPointer, jsonMessage);
     }
 
-    public boolean isPublisherReady(){
-        return publisher != null;
+    private void createNativePublisher(){
+
+        PersistentStorage storage = publisherParams.getStorage();
+        String pubConnectionAddress = publisherParams.getPubConnectionAddress();
+        String repConnectionAddress = publisherParams.getRepConnectionAddress();
+
+        publisherCreator = new Thread(() -> {
+            nativePublisher = new NativePublisher(storage.serialize(), pubConnectionAddress, repConnectionAddress);
+            nativeObjectPointer = nativePublisher.getNativeObjectPointer();
+        });
+
+        publisherCreator.start();
+        //tryJoin();
+
     }
+
+    private void tryJoin(){
+
+        try {
+            publisherCreator.join();
+        } catch (InterruptedException e) {
+            log.error(e.getMessage());
+        }
+
+    }
+
 
 }

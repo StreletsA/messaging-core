@@ -6,7 +6,9 @@ import messaging.core.persistence.NullDbPersistentStorage;
 import messaging.core.persistence.PersistentStorage;
 import messaging.core.persistence.PostgreSqlPersistentStorage;
 import messaging.core.publisher.Publisher;
+import messaging.core.publisher.PublisherParams;
 import messaging.core.subscriber.Subscriber;
+import messaging.core.subscriber.SubscriberParams;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -17,17 +19,21 @@ public class Main {
 
         Configuration.setLibMessagingCorePath("/home/andrey/Development/Projects/Ammer/messaging-core/core/java/");
 
-        PersistentStorage storage = new PostgreSqlPersistentStorage("postgres", "postgres", "127.0.0.1", "5432", "messaging_core", "messages");
-        Publisher publisher = new Publisher(storage, "tcp://*:4533", "tcp://*:9928");
-
+        PersistentStorage pubStorage = new PostgreSqlPersistentStorage("postgres", "postgres", "127.0.0.1", "5432", "messaging_core", "messages");
         PersistentStorage subStorage = new NullDbPersistentStorage();
-        Subscriber subscriber = new Subscriber(subStorage, "TRANSACTION", "tcp://localhost:4533", "tcp://localhost:9928");
+
+        SubscriberParams subscriberParams = new SubscriberParams(subStorage, "TRANSACTION", "tcp://localhost:4533", "tcp://localhost:9928");
+        PublisherParams publisherParams = new PublisherParams(pubStorage, "tcp://*:4533", "tcp://*:9928");
+
+        Publisher publisher = new Publisher(publisherParams);
+        Subscriber subscriber = new Subscriber(subscriberParams);
 
         Sender sender = new Sender(publisher);
         sender.start();
 
         Poller poller = new Poller(subscriber);
         poller.start();
+
 
     }
 
@@ -58,11 +64,8 @@ class Sender extends Thread {
                         "{\n\t\"string_data\":\t\"Good job!!!\"\n}"
                 );
 
-                String json = message.serialize();
-
-                publisher.publish(json);
-
-                //System.out.println("JAVA: SENDER: PUBLISHED JSON -> " + json);
+                String json = message.toJson();
+                publisher.publishByJson(json);
             }catch (Exception e){
                 e.printStackTrace();
             }

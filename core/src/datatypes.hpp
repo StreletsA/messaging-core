@@ -68,25 +68,29 @@ public:
     }
 };
 
-class Message
+class Envelope
 {
 
 public:
-    Message();
-    Message(std::string data_json);
-    Message
+    Envelope();
+    Envelope(std::string data_json);
+    Envelope
     (
         std::string topic,
         std::string uuid,
         long sequence_number,
         long timestamp,
+        bool success,
+        std::string error,
         std::string body
     );
-    Message
+    Envelope
     (
         std::string topic,
         std::string uuid,
         long timestamp,
+        bool success,
+        std::string error,
         std::string body
     );
 
@@ -109,12 +113,21 @@ public:
     std::string get_body();
     void set_body(std::string body);
 
+    std::string get_error();
+    void set_error(std::string error);
+
+    bool get_success();
+    void set_success(bool success);
+
 private:
     std::string topic;
     std::string uuid;
 
     long sequence_number;
     long timestamp;
+
+    bool success;
+    std::string error;
 
     std::string body;
 
@@ -146,11 +159,11 @@ public:
     std::string Serialize();
     bool Deserialize(std::string json_string);
 
-    void set_messages(std::list<Message> messages);
+    void set_message_envelopes(std::list<Envelope> messages);
 
-    std::list<Message> get_messages();
+    std::list<Envelope> get_message_envelopes();
 
 private:
-    std::list<Message> messages;
+    std::list<Envelope> message_envelopes;
 
 };

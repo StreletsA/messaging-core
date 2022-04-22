@@ -33,8 +33,8 @@ class PersistentStorageInterface
 {
 
 public:
-    virtual std::list<Message> get_messages(long start, long end) = 0;
-    virtual void store_message(Message message) = 0;
+    virtual std::list<Envelope> get_message_envelopes(long start, long end) = 0;
+    virtual void store_message_envelope(Envelope message_envelope) = 0;
     virtual long load_sequence_number() = 0;
 
     virtual long get_sequence_number() = 0;
@@ -47,15 +47,15 @@ class LmdbStorage : public PersistentStorageInterface
 
 public:
     LmdbStorage();
-    virtual std::list<Message> get_messages(long start, long end);
-    virtual void store_message(Message message);
+    virtual std::list<Envelope> get_message_envelopes(long start, long end);
+    virtual void store_message_envelope(Envelope message_envelope);
     virtual long load_sequence_number();
 
     virtual long get_sequence_number();
     virtual void join();
 
 private:
-    std::queue<Message> store_message_queue;
+    std::queue<Envelope> store_message_envelope_queue;
     long sequence_number;
     std::mutex g_mutex;
     
@@ -73,8 +73,8 @@ class TestPersistenceStorage : public PersistentStorageInterface
 public:
     TestPersistenceStorage();
     
-    virtual std::list<Message> get_messages(long start, long end);
-    virtual void store_message(Message message);
+    virtual std::list<Envelope> get_message_envelopes(long start, long end);
+    virtual void store_message_envelope(Envelope message_envelope);
     virtual long load_sequence_number();
 
     virtual long get_sequence_number();
@@ -83,9 +83,9 @@ public:
     void detach();
 
 private:
-    std::queue<Message> store_message_queue;
+    std::queue<Envelope> store_message_envelope_queue;
     long sequence_number = 0;
-    std::list<Message> message_storage;
+    std::list<Envelope> message_envelopes_storage;
     std::mutex g_mutex;
 
     void thread_fn();
@@ -100,19 +100,19 @@ class TestSubscriberPersistenceStorage : public PersistentStorageInterface
 public:
     TestSubscriberPersistenceStorage();
     
-    virtual std::list<Message> get_messages(long start, long end);
-    virtual void store_message(Message message);
+    virtual std::list<Envelope> get_message_envelopes(long start, long end);
+    virtual void store_message_envelope(Envelope message_envelope);
     virtual long load_sequence_number();
     virtual long get_sequence_number();
-    std::list<Message> get_messages();
+    std::list<Envelope> get_message_envelopes();
 
     void join();
     void detach();
 
 private:
-    std::queue<Message> store_message_queue;
+    std::queue<Envelope> store_message_envelope_queue;
     long sequence_number = 0;
-    std::list<Message> message_storage;
+    std::list<Envelope> message_envelopes_storage;
     std::mutex g_mutex;
 
     void thread_fn();
@@ -135,10 +135,11 @@ public:
     );
     PostgreSqlPersistentStorage(std::string json_params);
 
-    virtual std::list<Message> get_messages(long start, long end);
-    virtual void store_message(Message message);
+    virtual std::list<Envelope> get_message_envelopes(long start, long end);
+    virtual void store_message_envelope(Envelope message_envelope);
     virtual long load_sequence_number();
 
+    long load_sequence_number_for_topic(std::string topic);
     long get_sequence_number();
 
     void join();
@@ -147,7 +148,7 @@ public:
 private:
     std::string table_name;
     std::string connection_string;
-    std::queue<Message> store_message_queue;
+    std::queue<Envelope> store_message_envelope_queue;
     std::thread *store_thread;
     std::mutex g_mutex;
 
@@ -163,7 +164,7 @@ private:
     );
     void thread_fn();
 
-    std::string create_insert_sql(Message message);
+    std::string create_insert_sql(Envelope message_envelope);
     std::string create_select_sql(long start, long end);
 
 };
