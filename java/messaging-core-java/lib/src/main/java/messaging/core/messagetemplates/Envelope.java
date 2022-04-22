@@ -11,18 +11,20 @@ import lombok.*;
 @NoArgsConstructor
 @ToString
 @EqualsAndHashCode
-public class Message {
+public class Envelope {
 
     private String topic;
     private String uuid;
     private long sequenceNumber;
     private long timestamp;
+    private boolean success;
+    private String error;
     private String body;
 
-    public static Message fromJson(String json) throws JsonProcessingException{
-        Message message = new Message();
-        message.deserialize(json);
-        return message;
+    public static Envelope fromJson(String json) throws JsonProcessingException{
+        Envelope envelope = new Envelope();
+        envelope.deserialize(json);
+        return envelope;
     }
 
     public String toJson() throws JsonProcessingException{
@@ -37,13 +39,15 @@ public class Message {
     private void deserialize(String json) throws JsonProcessingException{
         ObjectMapper mapper = new ObjectMapper();
 
-        Message msg = mapper.readValue(json, this.getClass());
+        Envelope msgEnvelope = mapper.readValue(json, this.getClass());
 
-        uuid = msg.getUuid();
-        topic = msg.getTopic();
-        sequenceNumber = msg.getSequenceNumber();
-        timestamp = msg.getTimestamp();
-        body = msg.getBody();
+        uuid = msgEnvelope.getUuid();
+        topic = msgEnvelope.getTopic();
+        sequenceNumber = msgEnvelope.getSequenceNumber();
+        timestamp = msgEnvelope.getTimestamp();
+        success = msgEnvelope.isSuccess();
+        error = msgEnvelope.getError();
+        body = msgEnvelope.getBody();
 
     }
 

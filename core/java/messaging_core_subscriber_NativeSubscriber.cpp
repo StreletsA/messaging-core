@@ -32,10 +32,10 @@ JNIEXPORT jstring JNICALL Java_messaging_core_subscriber_NativeSubscriber_poll
   (JNIEnv *env, jobject obj, jlong pointer)
   {
   	Subscriber *subscriber = (Subscriber *) pointer;
-  	std::string message_json = subscriber->poll();
+  	std::string envelope_json = subscriber->poll();
 
   	//std::cout << "JNI SUBSCRIBER: MESSAGE POLLED: " << message_json << '\n';
   	
-  	return env->NewStringUTF(message_json.c_str());
+  	return env->NewStringUTF(envelope_json.c_str());
   }
 

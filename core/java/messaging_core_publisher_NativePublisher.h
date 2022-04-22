@@ -18,10 +18,10 @@ JNIEXPORT jlong JNICALL Java_messaging_core_publisher_NativePublisher_nativeNew
 /*
  * Class:     messaging_core_publisher_NativePublisher
  * Method:    publish
- * Signature: (JLjava/lang/String;Ljava/lang/String;JJLjava/lang/String;)V
+ * Signature: (JLjava/lang/String;Ljava/lang/String;JJZLjava/lang/String;Ljava/lang/String;)V
  */
 JNIEXPORT void JNICALL Java_messaging_core_publisher_NativePublisher_publish
-  (JNIEnv *, jobject, jlong, jstring, jstring, jlong, jlong, jstring);
+  (JNIEnv *, jobject, jlong, jstring, jstring, jlong, jlong, jboolean, jstring, jstring);
 
 /*
  * Class:     messaging_core_publisher_NativePublisher

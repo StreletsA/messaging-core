@@ -1,7 +1,7 @@
 package messaging.core.publisher;
 
 import lombok.extern.slf4j.Slf4j;
-import messaging.core.messagetemplates.Message;
+import messaging.core.messagetemplates.Envelope;
 import messaging.core.persistence.PersistentStorage;
 
 @Slf4j
@@ -31,13 +31,15 @@ public class Publisher {
         return nativePublisher != null;
     }
 
-    public void publish(Message message) {
+    public void publish(Envelope envelope) {
 
-        String topic = message.getTopic();
-        String uuid = message.getUuid();
-        long sequenceNumber = message.getSequenceNumber();
-        long timestamp = message.getTimestamp();
-        String body = message.getBody();
+        String topic = envelope.getTopic();
+        String uuid = envelope.getUuid();
+        long sequenceNumber = envelope.getSequenceNumber();
+        long timestamp = envelope.getTimestamp();
+        boolean success = envelope.isSuccess();
+        String error = envelope.getError();
+        String body = envelope.getBody();
 
         nativePublisher.publish(
                 nativeObjectPointer,
@@ -45,6 +47,8 @@ public class Publisher {
                 uuid,
                 sequenceNumber,
                 timestamp,
+                success,
+                error,
                 body
         );
     }

@@ -1,7 +1,7 @@
 package messaging.core.subscriber;
 
 import lombok.extern.slf4j.Slf4j;
-import messaging.core.messagetemplates.Message;
+import messaging.core.messagetemplates.Envelope;
 import messaging.core.persistence.PersistentStorage;
 
 import java.util.Optional;
@@ -35,36 +35,36 @@ public class Subscriber{
 
     public Optional<String> poll(){
 
-        Optional<String> strMessageOptional = Optional.empty();
+        Optional<String> strEnvelopeOptional = Optional.empty();
 
         try{
 
-            String strMessage = subscriber.poll(nativeObjectPointer);
+            String strEnvelope = subscriber.poll(nativeObjectPointer);
 
-            if (strMessage.length() > 0) {
-                strMessageOptional = Optional.of(strMessage);
+            if (strEnvelope.length() > 0) {
+                strEnvelopeOptional = Optional.of(strEnvelope);
             }
 
         }catch (Exception e){
             log.error(e.getMessage());
         }
 
-        return strMessageOptional;
+        return strEnvelopeOptional;
     }
 
-    public Optional<Message> pollMessage(){
+    public Optional<Envelope> pollMessageEnvelope(){
 
-        Optional<Message> messageOptional = Optional.empty();
-        Optional<String> strMessage = poll();
+        Optional<Envelope> messageEnvelopeOptional = Optional.empty();
+        Optional<String> strMessageEnvelope = poll();
 
-        if (strMessage.isPresent()){
+        if (strMessageEnvelope.isPresent()){
 
-            String json = strMessage.get();
-            messageOptional = getMessageFromJson(json);
+            String json = strMessageEnvelope.get();
+            messageEnvelopeOptional = getMessageFromJson(json);
 
         }
 
-        return messageOptional;
+        return messageEnvelopeOptional;
     }
 
     private void createNativeSubscriber(){
@@ -97,18 +97,18 @@ public class Subscriber{
 
     }
 
-    private Optional<Message> getMessageFromJson(String json){
+    private Optional<Envelope> getMessageFromJson(String json){
 
-        Optional<Message> messageOptional = Optional.empty();
+        Optional<Envelope> envelopeOptional = Optional.empty();
 
         try {
-            Message message = Message.fromJson(json);
-            messageOptional = Optional.of(message);
+            Envelope envelope = Envelope.fromJson(json);
+            envelopeOptional = Optional.of(envelope);
         }catch (Exception e){
             log.error(e.getMessage());
         }
 
-        return messageOptional;
+        return envelopeOptional;
 
     }
 

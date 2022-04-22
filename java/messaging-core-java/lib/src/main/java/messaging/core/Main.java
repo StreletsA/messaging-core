@@ -1,7 +1,7 @@
 package messaging.core;
 
 import messaging.core.config.Configuration;
-import messaging.core.messagetemplates.Message;
+import messaging.core.messagetemplates.Envelope;
 import messaging.core.persistence.NullDbPersistentStorage;
 import messaging.core.persistence.PersistentStorage;
 import messaging.core.persistence.PostgreSqlPersistentStorage;
@@ -19,7 +19,7 @@ public class Main {
 
         Configuration.setLibMessagingCorePath("/home/andrey/Development/Projects/Ammer/messaging-core/core/java/");
 
-        PersistentStorage pubStorage = new PostgreSqlPersistentStorage("postgres", "postgres", "127.0.0.1", "5432", "messaging_core", "messages");
+        PersistentStorage pubStorage = new PostgreSqlPersistentStorage("postgres", "postgres", "127.0.0.1", "5432", "messaging_core", "pub");
         PersistentStorage subStorage = new NullDbPersistentStorage();
 
         SubscriberParams subscriberParams = new SubscriberParams(subStorage, "TRANSACTION", "tcp://localhost:4533", "tcp://localhost:9928");
@@ -33,7 +33,6 @@ public class Main {
 
         Poller poller = new Poller(subscriber);
         poller.start();
-
 
     }
 
@@ -56,11 +55,13 @@ class Sender extends Thread {
         while (seqNum < 20){
 
             try {
-                Message message = new Message(
+                Envelope message = new Envelope(
                         "TRANSACTION",
                         UUID.randomUUID().toString(),
                         seqNum,
                         23422,
+                        true,
+                        "Empty",
                         "{\n\t\"string_data\":\t\"Good job!!!\"\n}"
                 );
 
@@ -87,14 +88,14 @@ class Poller extends Thread{
     public void run(){
         System.out.println("Poller is starting...");
 
-        Optional<Message> messageOptional = Optional.empty();
+        Optional<Envelope> envelopeOptional = Optional.empty();
 
         int i = 0;
         while (true){
             i++;
 
-            messageOptional = subscriber.pollMessage();
-            messageOptional.ifPresent(msg -> System.out.println("JAVA: POLLER -> " + msg));
+            envelopeOptional = subscriber.pollMessageEnvelope();
+            envelopeOptional.ifPresent(envelope -> System.out.println("JAVA: POLLER -> " + envelope));
 
         }
     }

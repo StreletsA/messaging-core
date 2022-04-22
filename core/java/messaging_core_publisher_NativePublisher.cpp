@@ -28,11 +28,11 @@ JNIEXPORT jlong JNICALL Java_messaging_core_publisher_NativePublisher_nativeNew
   }
 
 JNIEXPORT void JNICALL Java_messaging_core_publisher_NativePublisher_publish
-  (JNIEnv *env, jobject obj, jlong pointer, jstring topic, jstring uuid, jlong seq_num, jlong timestamp, jstring body)
+  (JNIEnv *env, jobject obj, jlong pointer, jstring topic, jstring uuid, jlong seq_num, jlong timestamp, jboolean success, jstring error, jstring body)
   {
   	Publisher *publisher = (Publisher*) pointer;
-  	Message *msg = new Message(jstring2string(env, topic), jstring2string(env, uuid), seq_num, timestamp, jstring2string(env, body));
-  	publisher->publish(*msg);
+  	Envelope *envelope = new Envelope(jstring2string(env, topic), jstring2string(env, uuid), seq_num, timestamp, success, jstring2string(env, error), jstring2string(env, body));
+  	publisher->publish(*envelope);
   }
 
 JNIEXPORT void JNICALL Java_messaging_core_publisher_NativePublisher_publishByJson
