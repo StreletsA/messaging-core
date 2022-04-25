@@ -17,7 +17,7 @@
 void add_messages(Publisher *publisher)
 {
 	int i = 0;
-	while(true)
+	while(i < 10)
 	{
 
 		i++;
@@ -34,9 +34,6 @@ void add_messages(Publisher *publisher)
 
 		msg_envelope.set_body(body);
 
-		publisher->publish(msg_envelope);
-		msg_envelope.set_topic("txs_commit");
-		msg_envelope.set_uuid(generate_uuid_v4());
 		publisher->publish(msg_envelope);
 	}
 }

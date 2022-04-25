@@ -29,7 +29,14 @@ public:
     long *get_sequence_number();
     
 private:
+
+    bool isPubBinded = false;
+    bool isRepBinded = false;
+
     long sequence_number;
+
+    const char *pub_connection_address;
+    const char *rep_connection_address;
 
     zmq::context_t *ctx;
     zmq::socket_t *pub_socket;
@@ -42,6 +49,8 @@ private:
     std::thread *pub_thread;
     std::thread *rep_thread;
 
+    void pub_binding_thread_fn();
+    void rep_binding_thread_fn();
     void pub_thread_fn();
     void rep_thread_fn();
 

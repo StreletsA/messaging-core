@@ -28,6 +28,10 @@ public:
     void detach();
 
 private:
+
+    bool isSubConnected = false;
+    bool isReqConnected = false;
+
     zmq::context_t *ctx;
     zmq::socket_t *sub_socket;
     zmq::socket_t *req_socket;
@@ -46,6 +50,8 @@ private:
     const char* req_connection_address;
 
     void startup();
+    void sub_connecting_thread_fn();
+    void req_connecting_thread_fn();
     void thread_fn();
     void do_recovery(long startseqnum, long endseqnum);
 
