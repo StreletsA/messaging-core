@@ -41,8 +41,9 @@ void Subscriber::sub_connecting_thread_fn()
             catch(const zmq::error_t e)
             {
                 std::cerr << e.what() << '\n';
-                std::this_thread::sleep_for (std::chrono::microseconds(250000));
             }
+
+            std::this_thread::sleep_for (std::chrono::microseconds(250000));
             
         }
 

@@ -74,13 +74,14 @@ void Publisher::pub_binding_thread_fn(){
 
                 isPubBinded = true;
 
-                std::this_thread::sleep_for (std::chrono::microseconds(250000));
-
             }
             catch(const zmq::error_t& e)
             {
                 std::cerr << e.what() << '\n';
             }
+
+            std::this_thread::sleep_for (std::chrono::microseconds(250000));
+
             
         }
 
@@ -103,13 +104,14 @@ void Publisher::rep_binding_thread_fn(){
 
                 isRepBinded = true;
 
-                std::this_thread::sleep_for (std::chrono::microseconds(250000));
-
             }
             catch(const zmq::error_t& e)
             {
                 std::cerr << e.what() << '\n';
             }
+
+            std::this_thread::sleep_for (std::chrono::microseconds(250000));
+
             
         }
 

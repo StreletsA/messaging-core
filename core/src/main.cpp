@@ -70,17 +70,19 @@ int main(int argc, char *argv[])
 
 	if (&tps == nullptr) std::cout << "NULL!" << '\n';
 
-	Publisher publisher(ctx, addr_pub, addr_rep, tps);
+	Publisher publisher1(ctx, addr_pub, addr_rep, tps);
+	Publisher publisher2(ctx, addr_pub, addr_rep, tps);
 	Subscriber subscriber(ctx, &tsps, "txs_new", addr_sub, addr_req);
 
-	std::thread appender(add_messages, &publisher);
+	//std::thread appender(add_messages, &publisher);
 	std::thread poller(poll_message, &subscriber);
 	
-	publisher.join();
+	publisher1.join();
+	publisher2.join();
 	subscriber.join();
 	tps->join();
 	tsps.join();
-	appender.join();
+	//appender.join();
 	poller.join();
 
 }
