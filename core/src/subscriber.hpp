@@ -29,8 +29,8 @@ public:
 
 private:
 
+    bool isRecoveringNow = false;
     bool isSubConnected = false;
-    bool isReqConnected = false;
 
     zmq::context_t *ctx;
     zmq::socket_t *sub_socket;
@@ -48,10 +48,12 @@ private:
 
     const char* sub_connection_address;
     const char* req_connection_address;
+    std::string sub_connection_address_copy;
+    std::string req_connection_address_copy;
 
     void startup();
     void sub_connecting_thread_fn();
-    void req_connecting_thread_fn();
+    void recovery_time_controller_thread_fn();
     void thread_fn();
     void do_recovery(long startseqnum, long endseqnum);
 

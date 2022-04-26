@@ -143,13 +143,15 @@ bool Envelope::Deserialize(std::string json_string)
 
     cJSON *json = cJSON_Parse(json_string.c_str());
     
-    uuid = cJSON_GetObjectItemCaseSensitive(json, "uuid")->valuestring;
-    topic = cJSON_GetObjectItemCaseSensitive(json, "topic")->valuestring;
-    sequence_number = cJSON_GetObjectItemCaseSensitive(json, "sequenceNumber")->valueint;
-    timestamp = cJSON_GetObjectItemCaseSensitive(json, "timestamp")->valueint;
-    success = cJSON_GetObjectItemCaseSensitive(json, "success")->valueint == 1;
-    error = cJSON_GetObjectItemCaseSensitive(json, "error")->valuestring;
-    body = std::string(cJSON_GetObjectItemCaseSensitive(json, "body")->valuestring);
+    uuid = cJSON_GetObjectItem(json, "uuid")->valuestring;
+    topic = cJSON_GetObjectItem(json, "topic")->valuestring;
+    sequence_number = cJSON_GetObjectItem(json, "sequenceNumber")->valueint;
+    timestamp = cJSON_GetObjectItem(json, "timestamp")->valueint;
+    success = cJSON_GetObjectItem(json, "success")->valueint == 1;
+    error = cJSON_GetObjectItem(json, "error")->valuestring;
+
+    char *body_str = cJSON_GetObjectItem(json, "body")->valuestring;
+    body = std::string(body_str == nullptr ? "" : body_str);
 
     return true;
 
@@ -310,9 +312,13 @@ std::string RecoveryResponse::Serialize()
 bool RecoveryResponse::Deserialize(std::string json_string)
 {
     cJSON *json = cJSON_Parse(json_string.c_str());
-    cJSON *message_envelopes_array_json = cJSON_GetObjectItem(json, "recoveryList");
-    long size = cJSON_GetArraySize(message_envelopes_array_json);
+    if (cJSON_IsNull(json)) return false;
 
+    cJSON *message_envelopes_array_json = cJSON_GetObjectItem(json, "recoveryList");
+    if (cJSON_IsNull(message_envelopes_array_json)) return false;
+    
+    long size = cJSON_GetArraySize(message_envelopes_array_json);
+    
     Envelope msg_envelope;
 
     for (long i = 0; i < size; i++)
@@ -322,7 +328,8 @@ bool RecoveryResponse::Deserialize(std::string json_string)
 
         message_envelopes.push_back(msg_envelope);
     }
-
+    
+    
     return true;
 
 }

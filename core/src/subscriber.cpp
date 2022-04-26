@@ -10,19 +10,22 @@ Subscriber::Subscriber(zmq::context_t *context, PersistentStorageInterface *stor
     this->req_connection_address = req_connection_address;
     this->topic = std::string(topic);
 
+    sub_connection_address_copy = std::string(sub_connection_address);
+    req_connection_address_copy = std::string(req_connection_address);
+
     sequence_number = storage->load_sequence_number();
 
     std::cout << "SUBSCRIBER: SUBSCRIBER CREATING..." << '\n';
 
+    req_socket->setsockopt(ZMQ_REQ_RELAXED, 1);
+
     std::thread* sub_connecting_thread = new std::thread(&Subscriber::sub_connecting_thread_fn, this);
-    std::thread* req_connecting_thread = new std::thread(&Subscriber::req_connecting_thread_fn, this);
     startup();
     start();
 }
 
 void Subscriber::sub_connecting_thread_fn()
 {
-
     while (true)
     {
 
@@ -31,8 +34,9 @@ void Subscriber::sub_connecting_thread_fn()
 
             try
             {
-                std::cout << "SUBSCRIBER: SUBSCRIBER CONNECTING TO " << sub_connection_address << '\n';
-                sub_socket->connect(sub_connection_address);
+                this->sub_connection_address = sub_connection_address_copy.c_str();
+                std::cout << "SUBSCRIBER: SUBSCRIBER CONNECTING TO " << this->sub_connection_address << '\n';
+                sub_socket->connect(this->sub_connection_address);
                 std::cout << "SUBSCRIBER: SUBSCRIBER CONNECTED!" << '\n';
                 sub_socket->setsockopt(ZMQ_SUBSCRIBE, topic.c_str(), strlen(topic.c_str()));
                 std::cout << "SUBSCRIBER: SUBSCRIBER TOPIC: " << topic << '\n';
@@ -44,34 +48,6 @@ void Subscriber::sub_connecting_thread_fn()
             }
 
             std::this_thread::sleep_for (std::chrono::microseconds(250000));
-            
-        }
-
-        std::this_thread::sleep_for (std::chrono::microseconds(250000));
-
-    }
-
-}
-
-void Subscriber::req_connecting_thread_fn()
-{
-
-    while (true)
-    {
-
-        while (!isReqConnected)
-        {
-
-            try
-            {
-                req_socket->setsockopt(ZMQ_REQ_RELAXED, 1);
-                isReqConnected = true;
-            }
-            catch(const zmq::error_t e)
-            {
-                std::cerr << e.what() << '\n';
-                std::this_thread::sleep_for (std::chrono::microseconds(250000));
-            }
             
         }
 
@@ -129,6 +105,16 @@ void Subscriber::detach()
 
 void Subscriber::do_recovery(long startseqnum, long endseqnum)
 {
+    this->req_connection_address = req_connection_address_copy.c_str();
+    if (isRecoveringNow)
+    {
+        return;
+    }
+    else
+    {
+        isRecoveringNow = true;
+        std::thread *recovery_time_controller_thread = new std::thread(&Subscriber::recovery_time_controller_thread_fn, this);
+    }
 
     try
     {
@@ -149,6 +135,8 @@ void Subscriber::do_recovery(long startseqnum, long endseqnum)
 
         std::string request_string = recovery_request.Serialize();
 
+        std::cout << "RECOVERY: CONNECTED: REQUEST_JSON -> " << request_string << '\n';
+
         // Create message from string data
         zmq::message_t message(request_string.size());
         memcpy (message.data(), request_string.data(), request_string.size());
@@ -163,7 +151,7 @@ void Subscriber::do_recovery(long startseqnum, long endseqnum)
         // Get string data from zmq message
         std::string resp_data = std::string(static_cast<char*>(resp_message.data()), resp_message.size());
 
-        //std::cout << "RESP DATA: " << resp_data << '\n';
+        std::cout << "RESP DATA: " << resp_data << '\n';
 
         RecoveryResponse recovery_response;
         recovery_response.Deserialize(resp_data);
@@ -184,9 +172,35 @@ void Subscriber::do_recovery(long startseqnum, long endseqnum)
     }
     catch(const zmq::error_t e)
     {
-        isReqConnected = false;
-        std::cerr << e.what() << '\n';
-        std::this_thread::sleep_for (std::chrono::microseconds(250000));
+        std::cerr << "RECOVERING ERROR: " << e.what() << '\n';
+    }
+
+    try
+    {
+        req_socket->disconnect(req_connection_address);
+    }
+    catch(const zmq::error_t e)
+    {
+        std::cerr << "RECOVERY DISCONNECT ERROR: ADDRESS -> " << req_connection_address << " : " << e.what() << '\n';
+    }
+    isRecoveringNow = false;
+
+}
+
+void Subscriber::recovery_time_controller_thread_fn()
+{
+    std::this_thread::sleep_for (std::chrono::microseconds(5000000)); // 5 sec
+    if (isRecoveringNow)
+    {
+        isRecoveringNow = false;
+        try
+        {
+            req_socket->disconnect(req_connection_address);
+        }
+        catch(const zmq::error_t e)
+        {
+            std::cerr << "RECOVERING_TIME_CONTROLLER: RECOVERY DISCONNECT ERROR: ADDRESS -> " << req_connection_address << " : " << e.what() << '\n';
+        }
     }
 }
 
@@ -200,6 +214,7 @@ void Subscriber::thread_fn()
         
         try
         {
+            std::cout << "SUBSCRIBER: DEBUG: ADDRESS -> " << this->sub_connection_address << '\n';
             // Create a received zmq message
             zmq::message_t message_topic;
             zmq::message_t message;
@@ -211,7 +226,10 @@ void Subscriber::thread_fn()
             // Get string data from zmq message
             std::string topic = std::string(static_cast<char*>(message_topic.data()), message_topic.size());
             std::string data = std::string(static_cast<char*>(message.data()), message.size());
+
             std::cout << "SUBSCRIBER: RECV TOPIC -> " << topic << '\n';
+            std::cout << "SUBSCRIBER: RECV MESSAGE -> " << data << 'n';
+
             // Delete topic name from string data and get json
             //std::string message_json = data.substr(topic.size());
             std::string message_envelope_json = data;
@@ -244,6 +262,7 @@ void Subscriber::thread_fn()
         catch(const zmq::error_t e)
         {
             isSubConnected = false;
+            std::cout << "SUBSCRIBER DISCONNECTED: ADDRESS -> " << this->sub_connection_address << '\n';
             std::cerr << e.what() << '\n';
             std::this_thread::sleep_for (std::chrono::microseconds(250000));
         }
