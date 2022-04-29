@@ -22,7 +22,7 @@ public class Main {
         PersistentStorage pubStorage = new PostgreSqlPersistentStorage("postgres", "postgres", "127.0.0.1", "5432", "messaging_core", "pub");
         PersistentStorage subStorage = new NullDbPersistentStorage();
 
-        SubscriberParams subscriberParams = new SubscriberParams(subStorage, "TRANSACTION", "tcp://localhost:4533", "tcp://localhost:9928");
+        SubscriberParams subscriberParams = new SubscriberParams(subStorage, "TRANSACTION", "eth", "tcp://localhost:4533", "tcp://localhost:9928");
         PublisherParams publisherParams = new PublisherParams(pubStorage, "tcp://*:4533", "tcp://*:9928");
 
         Publisher publisher = new Publisher(publisherParams);

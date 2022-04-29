@@ -1,9 +1,6 @@
 package messaging.core.subscriber;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import messaging.core.persistence.PersistentStorage;
 
 @Getter
@@ -14,6 +11,7 @@ public class SubscriberParams {
 
     private PersistentStorage storage;
     private String topic;
+    private String adapterName;
     private String subConnectionAddress;
     private String reqConnectionAddress;
 
